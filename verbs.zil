@@ -4,20 +4,29 @@
 
 ;"subtitle game commands"
 
-<GLOBAL VERBOSITY 1> ;"0 = super-brief, 1 = brief, 2 = verbose"
+<GLOBAL VERBOSITY 1> ;"0 = superbrief, 1 = brief, 2 = verbose"
 
 <ROUTINE V-VERBOSE ()
-	 <SETG VERBOSITY 2>
-	 <TELL "Maximum verbosity." CR CR>
-	 <V-LOOK>>
+	 <COND (<EQUAL? ,VERBOSITY 2>
+		<TELL ,ALREADY-IN-MODE>)
+	       (T
+	 	<SETG VERBOSITY 2>
+	        <TELL "Maximum verbosity." CR CR>
+	 	<V-LOOK>)>>
 
 <ROUTINE V-BRIEF ()
-	 <SETG VERBOSITY 1>
-	 <TELL "Brief descriptions." CR>>
+	 <COND (<EQUAL? ,VERBOSITY 1>
+		<TELL ,ALREADY-IN-MODE>)
+	       (T
+	 	<SETG VERBOSITY 1>
+	 	<TELL "Brief descriptions." CR>)>>
 
 <ROUTINE V-SUPER-BRIEF ()
-	 <SETG VERBOSITY 0>
-	 <TELL "Superbrief descriptions." CR>>
+	 <COND (<EQUAL? ,VERBOSITY 0>
+		<TELL ,ALREADY-IN-MODE>)
+	       (T
+	        <SETG VERBOSITY 0>
+	 	<TELL "Superbrief descriptions." CR>)>>
 
 <ROUTINE V-SAVE ()
 	 <SETG P-CONT <>> ;"flush anything on input line after SAVE"
@@ -28,7 +37,8 @@
 		     <NOT <EQUAL? ,HERE ,FACTORY>>>
 		<TELL
 "Floyd's eyes light up. \"Oh boy! Are we gonna try something
-dangerous now?\"" CR CR>)>
+dangerous now?\"" CR CR>
+		;<CONTINUE>)>
 	 <COND (<SAVE>
 	        <TELL ,OK>)
 	       (T
@@ -41,11 +51,18 @@ dangerous now?\"" CR CR>)>
 		     <NOT <EQUAL? ,HERE ,FACTORY>>>
 		<TELL
 "Floyd looks disappointed but understanding. \"That part of the story
-was more fun,\" he sighs." CR CR>)>
+was more fun,\" he sighs." CR CR>
+		;<CONTINUE>)>
 	 <COND (<RESTORE>
 	        <TELL ,OK>)
 	       (T
 		<TELL ,FAILED>)>>
+
+<ROUTINE CONTINUE ()
+	 <TELL "[Hit your RETURN/ENTER key.]" CR>
+	 <PUTB ,P-LEXV 0 10>
+	 <READ ,P-INBUF ,P-LEXV>
+	 <PUTB ,P-LEXV 0 60>>
 
 <ROUTINE TELL-SCORE ()
 	 <TELL
@@ -55,19 +72,19 @@ adventure. ">
 	 <TELL " Your score gives you the rank of ">
 	 <COND (<EQUAL? ,SCORE 0>
 		<TELL "Insignificant Nobody">)
-	       (<L? ,SCORE 13>
+	       (<L? ,SCORE 17> ;"1 thru 16"
 		<TELL "Rising Young Insignificant Nobody">)
-	       (<L? ,SCORE 25>
+	       (<L? ,SCORE 27> ;"17 thru 26"
 		<TELL "One-Day Flash on the Evening News">)
-	       (<L? ,SCORE 36>
+	       (<L? ,SCORE 40> ;"27 thru 39"
 		<TELL "Footnote in History">)
-	       (<L? ,SCORE 46>
+	       (<L? ,SCORE 50> ;"40 thru 49"
 		<TELL "International VIP">)
-	       (<L? ,SCORE 55>
+	       (<L? ,SCORE 65> ;"50 thru 64"
 		<TELL "Interplanetary Star">)
-	       (<L? ,SCORE 63>
+	       (<L? ,SCORE 80> ;"65 thru 79"
 		<TELL "Interstellar Superstar">)
-	       (T
+	       (T ;"80"
 		<TELL "Intergalactic Mega-Hero">)>
 	 <TELL ,PERIOD-CR>>
 
@@ -99,7 +116,7 @@ to save for important scenes. Not like this one.\"" CR>)>
 
 <ROUTINE CORP-NOTICE (STRING)
 	 <TELL
-"Here " .STRING " a transcript of interaction with STATIONALL." CR>>
+"Here " .STRING " a transcript of interaction with STATIONFALL." CR>>
 
 <ROUTINE V-DIAGNOSE ()
 	 <SETG C-ELAPSED 18>
@@ -136,10 +153,10 @@ to save for important scenes. Not like this one.\"" CR>)>
 		      (T
 		       <COND (<EQUAL? ,HUNGER-LEVEL 1>
 			      <TELL "fairly">)
-			     (<G? ,HUNGER-LEVEL 4>
-			      <TELL "awesomely">)
+			     (<EQUAL? ,HUNGER-LEVEL 2>
+			      <TELL "very">)
 			     (T
-			      <TELL "very">)>
+			      <TELL "awesomely">)>
 		       <TELL " hungry and thirsty">)>
 		<TELL ". In all other respects, you are in good health." CR>)>>
 
@@ -233,7 +250,7 @@ interests of interstellar peace, type RESTART, RESTORE, or QUIT: >">
 <ROUTINE V-SCORE ()
 	 <TELL "You're currently getting ">
 	 <COND (<EQUAL? ,VERBOSITY 0>
-		<TELL "super-brief">)
+		<TELL "superbrief">)
 	       (<EQUAL? ,VERBOSITY 1>
 		<TELL "brief">)
 	       (T
@@ -317,6 +334,7 @@ this disk, they'll have Floyd to answer to.\"" CR>)>>
 	 <FSET ,IRIS-HATCH ,OPENBIT>
 	 <SETG ROBOT-PICKED ,FLOYD>
 	 <SETG SPACETRUCK-COUNTER 5>
+	 <FCLEAR ,SPACETRUCK ,WEIGHTLESSBIT>
 	 <REMOVE ,CLASS-THREE-SPACECRAFT-ACTIVATION-FORM>
 	 <REMOVE ,ROBOT-USE-AUTHORIZATION-FORM>
 	 <MOVE ,FLOYD ,SPACETRUCK>
@@ -519,10 +537,14 @@ object, LOOK INSIDE it, LOOK UNDER it, etc." CR>)>>
 		<CANT-VERB-A-PRSO "close">)>>
 
 <ROUTINE V-COMFORT ()
-	 <COND (<FSET? ,PRSO ,ACTORBIT>
+	 <COND (<OR <FSET? ,PRSO ,ACTORBIT>
+		    <PRSO? ,BALLOON>>
 		<TELL "But" T ,PRSO " isn't in need of comforting!" CR>)
 	       (T
 		<TELL ,HUH>)>>
+
+<ROUTINE V-COMPARE ()
+	 <TELL "They're incomparable." CR>>
 
 <ROUTINE V-CONNECT ()
 	 <IMPOSSIBLES>>
@@ -538,6 +560,9 @@ object, LOOK INSIDE it, LOOK UNDER it, etc." CR>)>>
 
 <ROUTINE V-CROSS ()
 	 <V-WALK-AROUND>>
+
+<ROUTINE V-CRUMPLE ()
+	 <CANT-VERB-A-PRSO "crumple">>
 
 <ROUTINE V-CUT ()
 	 <COND (<NOT ,PRSI>
@@ -576,7 +601,7 @@ object, LOOK INSIDE it, LOOK UNDER it, etc." CR>)>>
 	       (T
 		<MOVE ,PROTAGONIST ,HERE>
 		<TELL "You get o">
-		<COND (<OFF-VEHICLE? ,PRSO>
+		<COND (<PRSO? ,BED>
 		       <TELL "ff">)
 		      (T
 		       <TELL "ut of">)>
@@ -595,7 +620,8 @@ object, LOOK INSIDE it, LOOK UNDER it, etc." CR>)>>
 
 <ROUTINE PRE-DRILL ()
 	 <COND (<NOT ,PRSI>
-		<COND (<ULTIMATELY-IN? ,DRILL>
+		<COND (<AND <ULTIMATELY-IN? ,DRILL>
+			    <VISIBLE? ,DRILL>>
 		       <SETG PRSI ,DRILL>)
 		      (T
 		       <TELL
@@ -604,7 +630,13 @@ object, LOOK INSIDE it, LOOK UNDER it, etc." CR>)>>
 	 <COND (<NOT <PRSI? ,DRILL>>
 		<TELL ,YOU-CANT "drill with" AR ,PRSI>)
 	       (<NOT <FIRST? ,DRILL>>
-		<TELL "There's no bit in the drill!" CR>)>>
+		<TELL "There's no bit in the drill!" CR>)
+	       (<UNTOUCHABLE? ,PRSO>
+		<CANT-REACH ,PRSO>)
+	       (<NOT ,DRILL-FOOTNOTE>
+		<SETG DRILL-FOOTNOTE T>
+		<TELL "(Footnote 5) ">
+		<RFALSE>)>>
 
 <ROUTINE V-DRILL ()
 	 <COND (<FSET? ,PRSO ,TAKEBIT>
@@ -632,7 +664,7 @@ object, LOOK INSIDE it, LOOK UNDER it, etc." CR>)>>
 		<TELL "[removing" T ,PRSO " from the drill first]" CR>)>
 	 <COND (<EQUAL? ,HERE ,TOP-OF-AIR-SHAFT ,AIR-SHAFT>
 		<MOVE ,PRSO ,BOTTOM-OF-AIR-SHAFT>
-		<TELL "It drops down the shaft." CR>)
+		<TELL "It plunges down the shaft." CR>)
 	       (T
 		<COND (<IN? ,PROTAGONIST ,HOLDING-TANK>
 		       <MOVE ,PRSO ,HOLDING-TANK>)
@@ -659,8 +691,14 @@ object, LOOK INSIDE it, LOOK UNDER it, etc." CR>)>>
 		       <SETG C-ELAPSED 15>
 		       <SETG HUNGER-LEVEL 0>
 		       <QUEUE I-HUNGER-WARNINGS 2250>
-		       <TELL
-"Mmmm...that tasted just like yummy" .FOOD ,PERIOD-CR>)>)
+		       <TELL "Mmmm...that tasted just like yummy" .FOOD>
+		       <COND (<PRSO? ,NECTAR>
+			      <ANTI-LITTER ,NECTAR>)
+			     (<PRSO? ,SOUP>
+			      <TELL ". The soup was ">
+			      <DESCRIBE-SOUP-TEMPERATURE>)
+			     (T
+		       	      <TELL ,PERIOD-CR>)>)>)
 	       (T
 		<TELL
 "It's doubtful that" T ,PRSO " would agree with you." CR>)>>
@@ -873,7 +911,7 @@ object, LOOK INSIDE it, LOOK UNDER it, etc." CR>)>>
 		<TELL "Looks as if" T .L " has it." CR>)
 	       (<AND <FSET? .L ,CONTBIT>
 		     <VISIBLE? ,PRSO>
-		     <NOT <IN? .L ,GLOBAL-OBJECTS>>>
+		     <NOT <EQUAL? .L ,GLOBAL-OBJECTS>>>
 		<COND (<FSET? .L ,SURFACEBIT>
 		       <TELL "O">)
 		      (<AND <FSET? .L ,VEHBIT>
@@ -884,9 +922,14 @@ object, LOOK INSIDE it, LOOK UNDER it, etc." CR>)>>
 		<TELL "n" TR .L>)
 	       (<OR <NOT .WHERE>
 		    <IN? ,PRSO ,GLOBAL-OBJECTS>>
-		<TELL "You'll have to do that yourself." CR>)
+		<TELL ,YOULL-HAVE-TO "do that yourself." CR>)
 	       (T
 		<TELL "Beats me." CR>)>>
+
+<ROUTINE V-FIX ()
+	 <TELL
+"[You shouldn't expect such general commands to work. To repair something,
+you must perform the specific steps required.]" CR>>
 
 <ROUTINE V-FLATTEN ()
 	 <TELL ,HUH>>
@@ -904,6 +947,79 @@ object, LOOK INSIDE it, LOOK UNDER it, etc." CR>)>>
 ;<ROUTINE I-FOLLOW ()
 	 <SETG FOLLOW-FLAG <>>
 	 <RFALSE>>
+
+<GLOBAL READ-A-FOOTNOTE <>>
+
+<ROUTINE V-FOOTNOTE ()
+	 <SETG C-ELAPSED 0>
+	 <COND (<OR <NOT ,PRSO>
+		    <NOT <PRSO? ,INTNUM>>>
+		<TELL "Specify a number, as in \"FOOTNOTE 6.\"" CR>
+		<RTRUE>)
+	       (<EQUAL? ,P-NUMBER 1>
+		<TELL
+"These dice are obviously special zero-gee dice which project their
+own gravitational field onto the nearest surface. Zero-gee dice are, of
+course, notoriously easy to load">)
+	       (<EQUAL? ,P-NUMBER 2>
+		<TELL
+,UNFAMILIAR "Blather was your officious, tyrannical superior aboard the S.P.S.
+Feinstein. He was demoted because of his craven behavior during the destruction
+of the Feinstein">)
+	       (<EQUAL? ,P-NUMBER 3>
+		<TELL
+"The story of your acquaintance with Floyd and the episode on Resida are
+recounted in PLANETFALL">)
+	       (<EQUAL? ,P-NUMBER 4>
+		<TELL
+"This is, of course, impossible. To do this, the creature would have to be
+an order of magnitude larger. There are two possible explanations: 1. The
+creature actually extends part of its volume into a parallel dimension.
+2. A callous disregard for scientific accuracy on the part of the author">)
+	       (<EQUAL? ,P-NUMBER 5 9 13>
+		<TELL "Kids: ">
+		<COND (<EQUAL? ,P-NUMBER 5>
+		       <TELL "drills">)
+		      (<EQUAL? ,P-NUMBER 9>
+		       <TELL "zapguns">)
+		      (T
+		       <TELL "FREZONE (tm) explosives">)>
+		<TELL
+" are very dangerous. Don't try this at home without adult supervision">)
+	       (<EQUAL? ,P-NUMBER 6>
+		<TELL "That was just an example">)
+	       (<EQUAL? ,P-NUMBER 7>
+		<TELL
+,UNFAMILIAR "your frenzied boss, Ensign Blather, would toss you into
+the Feinstein's brig for almost any violation of the Stellar Patrol's
+near-infinity of trivial regulations">)
+	       (<EQUAL? ,P-NUMBER 8>
+		<TELL
+"The author wishes to refute any claims that the use of footnotes is a ripoff
+from the interactive fiction version of THE HITCHHIKER'S GUIDE TO THE GALAXY.
+This is not true. Well, maybe it's a little bit true, in which case the author
+wishes to point out his right to rip off his own ideas. So there">)
+	       ;"9 handled above"
+	       (<EQUAL? ,P-NUMBER 10> ;"not referenced"
+		<SETG AWAITING-REPLY 1>
+		<QUEUE I-REPLY 1> ;"FOOTNOTE turns don't run clocker"
+		<TELL "Isn't it fun reading through all the footnotes?" CR>
+		<RTRUE>)
+	       (<EQUAL? ,P-NUMBER 11 12>
+		<TELL
+"How to keep a STATIONFALL player busy all day (Footnote 1">
+		<COND (<EQUAL? ,P-NUMBER 11>
+		       <TELL "2)">)
+		      (T
+		       <TELL "1)">)>)
+	       ;"13 handled above"
+	       (T
+		<TELL "There is no Footnote " N ,P-NUMBER ,PERIOD-CR>
+		<RTRUE>)>
+	 <COND (<NOT ,READ-A-FOOTNOTE>
+		<SETG READ-A-FOOTNOTE T>
+		<TELL ". (Footnote 8)">)>
+	 <TELL ,PERIOD-CR>>
 
 <ROUTINE PRE-GIVE ()
 	 <COND (<AND <VERB? GIVE>
@@ -949,6 +1065,7 @@ object, LOOK INSIDE it, LOOK UNDER it, etc." CR>)>>
 
 <ROUTINE V-HELLO ()
        <COND (,PRSO
+	      <SETG P-WON <>>
 	      <TELL
 "[The proper way to talk to characters in the story is PERSON, HELLO.]" CR>)
 	     (T
@@ -958,10 +1075,10 @@ object, LOOK INSIDE it, LOOK UNDER it, etc." CR>)>>
 <ROUTINE V-HELP ()
 	 <TELL
 "[Help!?! You need help?!? Do you know how hard it is being a computer? My
-chips feel are about to go, my wife just ran off with a mainframe from
-Milwaukee, and one of the kids just told me that when he grows up he wants to
-be a talking greeting card! Furtherm... Hey! I'm not done! Mumk mpgrlph...]
-If you're really stuck, you can order a complete map and InvisiClues hint
+chips are about to go, my wife just ran off with a mainframe from Milwaukee,
+and one of the kids just told me that when he grows up he wants to be a
+talking greeting card! Furtherm... Hey! I'm not done! Mumk mpgrlph...]|
+   If you're really stuck, you can order a complete map and InvisiClues hint
 booklet from your dealer or by using the order form from your package." CR>>
 
 <ROUTINE V-HIDE ()
@@ -984,7 +1101,8 @@ booklet from your dealer or by using the order form from your package." CR>>
 		<PERFORM ,V?SHOOT ,PRSO ,PRSI>
 		<RTRUE>)
 	       (<AND <NOT ,PRSI>
-		     <ULTIMATELY-IN? ,ZAPGUN>>
+		     <ULTIMATELY-IN? ,ZAPGUN>
+		     <EQUAL? ,P-PRSA-WORD ,W?KILL>>
 		<TELL "(with" T ,ZAPGUN ")" CR>
 		<PERFORM ,V?SHOOT ,PRSO ,ZAPGUN>
 		<RTRUE>)
@@ -1013,9 +1131,17 @@ booklet from your dealer or by using the order form from your package." CR>>
 		     <FSET? ,STAR ,TRYTAKEBIT>>
 		<TELL
 "Your best jump still leaves you half a meter short of the star." CR>)
+	       (<EQUAL? ,HERE ,AIR-SHAFT ,TOP-OF-AIR-SHAFT>
+		<COND (<EQUAL? ,AIR-SHAFT-LOC 7>
+		       ,BOTTOM-OF-AIR-SHAFT)
+		      (T
+		       <JIGS-UP "You plummet down the shaft...">)>)
 	       (<EQUAL? ,HERE ,BOTTOM-OF-AIR-SHAFT>
 		<PERFORM ,V?OPEN ,GRATING>
 		<RTRUE>)
+	       (<EQUAL? ,HERE ,VACUUM-STORAGE>
+		<TELL "You sail away from the village...">
+		<LOST-IN-SPACE>)
 	       (T
 		<WEE>)>>
 
@@ -1148,8 +1274,11 @@ booklet from your dealer or by using the order form from your package." CR>>
 
 <ROUTINE V-LOOK-UP ()
 	 <COND (<PRSO? ,ROOMS>
-		<PERFORM ,V?EXAMINE ,CEILING>
-		<RTRUE>)
+		<COND (<EQUAL? ,HERE ,BOTTOM-OF-ELEVATOR-SHAFT>
+		       <TELL ,ONLY-BLACKNESS>)
+		      (T
+		       <PERFORM ,V?EXAMINE ,CEILING>
+		       <RTRUE>)>)
 	       (T
 		<PERFORM ,V?LOOK-INSIDE ,PRSO>
 		<RTRUE>)>>
@@ -1161,8 +1290,7 @@ booklet from your dealer or by using the order form from your package." CR>>
 	 <YOU-SOUND "indecis">>
 
 <ROUTINE V-MEASURE ()
-	 <COND (<OR <FSET? ,PRSO ,PARTBIT>
-		    <PRSO? ,ME>>
+	 <COND (<PRSO? ,ME ,HANDS ,TONGUE>
 		<TELL "Usual size." CR>)
 	       (T
 	 	<TELL "The same size as any other " D ,PRSO ,PERIOD-CR>)>>
@@ -1183,7 +1311,9 @@ booklet from your dealer or by using the order form from your package." CR>>
 	 <COND (<AND ,PRSI
 		     <PRSI? ,ZAPGUN>>
 		<PERFORM ,V?SHOOT ,PRSO ,PRSI>
-		<RTRUE>)>>
+		<RTRUE>)
+	       (<UNTOUCHABLE? ,PRSO>
+		<CANT-REACH ,PRSO>)>>
 
 <ROUTINE V-MUNG ()
 	 <COND (<PRSO? ,ROOMS> ;"break out"
@@ -1289,10 +1419,7 @@ of the Galactic Adventure Game Compendium of Rules." CR>>
 	 <TELL "If you pray enough, your prayers may be answered." CR>>
 
 <ROUTINE V-PUSH ()
-	 <COND (<AND <EQUAL? <GET ,P-NAMW 0> ,W?ONE ,W?TWO ,W?THREE>
-		     <GLOBAL-IN? ,KEYPAD ,HERE>>
-		<TELL ,TYPE-NUMERALS>)
-	       (<AND <EQUAL? ,P-PRSA-WORD ,W?PRESS ,W?IRON>
+	 <COND (<AND <EQUAL? ,P-PRSA-WORD ,W?PRESS ,W?IRON>
 		     <EQUAL? ,HERE ,LAUNDRY>
 		     <OR <NOT ,PRSI>
 			   <PRSI? ,PRESSER>>>
@@ -1316,16 +1443,18 @@ of the Galactic Adventure Game Compendium of Rules." CR>>
 		<RTRUE>)
 	       (<PRSO? ,HANDS>
 		<COND (<AND <VERB? PUT-ON PUT>
-			    <FSET? ,PRSI ,PARTBIT>>
+			    <PRSI? ,HANDS ,TONGUE>>
 		       <RFALSE>)
 		      (<VERB? PUT>
 		       <PERFORM ,V?REACH-IN ,PRSI>
 		       <RTRUE>)
 		      (T
 		       <IMPOSSIBLES>)>)
-	       (<AND <NOT <FSET? ,PRSI ,PARTBIT>>
+	       (<AND <NOT <PRSI? ,HANDS ,TONGUE>>
 		     <PRE-LOOK>>		     
 		<RTRUE>)
+	       (<IN? ,PRSO ,PRSI>
+		<TELL "But" T ,PRSO " is already in" TR ,PRSI>)
 	       (<ULTIMATELY-IN? ,PRSI ,PRSO>
 		<TELL ,YOU-CANT "put" T ,PRSO>
 		<COND (<EQUAL? <GET ,P-ITBL ,P-PREP2> ,PR?ON>
@@ -1354,13 +1483,11 @@ of the Galactic Adventure Game Compendium of Rules." CR>>
 			 <NOT <FSET? ,PRSO ,TAKEBIT>>>>
 		<TELL "How can you do that?" CR>)
 	       (<FSET? ,PRSI ,DOORBIT>
-		<TELL ,CANT-FROM-HERE>)
+		<TELL "You can't do that from here." CR>)
 	       (<AND <NOT <FSET? ,PRSI ,OPENBIT>>
 		     <NOT <FSET? ,PRSI ,SURFACEBIT>>>
 		<THIS-IS-IT ,PRSI>
 		<DO-FIRST "open" ,PRSI>)
-	       (<IN? ,PRSO ,PRSI>
-		<TELL "But" T ,PRSO " is already in" TR ,PRSI>)
 	       (<FSET? ,PRSI ,ACTORBIT>
 		<TELL ,HUH>)
 	       (<AND <G? <- <+ <WEIGHT ,PRSI> <WEIGHT ,PRSO>>
@@ -1537,9 +1664,15 @@ of the Galactic Adventure Game Compendium of Rules." CR>>
 		<SETG ZAPGUN-SHOTS <- ,ZAPGUN-SHOTS 1>>
 		<RFALSE>)>>
 
-<ROUTINE V-SHOOT () ;"PRSI must be ZAPGUN because of PRE-SHOOT"
+<ROUTINE V-SHOOT ("AUX" L) ;"PRSI must be ZAPGUN because of PRE-SHOOT"
+	 <COND (<NOT ,ZAPGUN-FOOTNOTE>
+		<SETG ZAPGUN-FOOTNOTE T>
+		<TELL "(Footnote 9) ">)>
 	 <TELL "A blaze of intense rays ">
-	 <COND (<FSET? ,PRSO ,TAKEBIT>
+	 <COND (<OR <FSET? ,PRSO ,TAKEBIT>
+		    <PRSO? ,ID-CHANGER ,LOCKER ,ROULETTE-WHEEL ,LOG-READER
+			   ,HEATING-CHAMBER ,DRYER ,PRESSER ,CAGE ,SKELETON
+			   ,ORANGE-GOO ,GRAY-GOO ,SOUP>>
 		<TELL
 "envelop" T ,PRSO ". When the rays dissipate," T ,PRSO " ">
 		<COND (<FSET? ,PRSO ,PLURALBIT>
@@ -1556,11 +1689,25 @@ of the Galactic Adventure Game Compendium of Rules." CR>>
 		       <TELL "ing" T ,PRSO>
 		       <JIGS-UP ".">)
 		      (T
+		       <SET L <LOC ,PRSO>>
+		       <COND (<EQUAL? .L ,FLOYD>
+			      <TELL
+" Floyd, who was holding" T ,PRSO " at the time, gives a shriek of fear,
+and all the oil drains from his face.">)
+			     (<NOT <EQUAL? .L ,HERE ,PEDESTAL ,DRILLED-HOLE>>
+			      <TELL
+" Naturally," T .L " is also history, since" T ,PRSO " was sitting ">
+			      <COND (<FSET? .L ,SURFACEBIT>
+				     <TELL "o">)
+				    (T
+				     <TELL "i">)>
+			      <TELL "n it.">
+			      <REMOVE-CAREFULLY .L>)>
 		       <REMOVE-CAREFULLY ,PRSO>
 		       <CRLF>)>)
 	       (T
 		<TELL
-"wash over" T ,PRSO ". It glows for a bit, but then cools." CR>)>>
+"washes over" T ,PRSO ". It glows for a bit, but then cools." CR>)>>
 
 <ROUTINE V-SSHOOT ()
 	 <PERFORM ,V?SHOOT ,PRSI ,PRSO>
@@ -1574,6 +1721,8 @@ of the Galactic Adventure Game Compendium of Rules." CR>>
 	 <COND (<NOT <PRSO? ,ROOMS>>
 		<PERFORM ,V?ENTER ,PRSO>
 		<RTRUE>)
+	       (<EQUAL? ,HERE ,THEATRE>
+		<TELL "But there's nothing to watch at the moment!" CR>)
 	       (<SET VEHICLE <FIND-IN ,HERE ,VEHBIT>>
 		<PERFORM ,V?ENTER .VEHICLE>
 		<RTRUE>)
@@ -1593,15 +1742,18 @@ of the Galactic Adventure Game Compendium of Rules." CR>>
 	        <TELL
 "Members of civilized societies usually sleep in beds." CR>)>>
 
-<ROUTINE V-SMELL ()
-	 <COND (<NOT ,PRSO>
-		<COND (<FSET? ,SPACESUIT ,WORNBIT>
-		       <TELL
+<ROUTINE PRE-SMELL ()
+	 <COND (<FSET? ,SPACESUIT ,WORNBIT>
+		<TELL
 "You smell stale air and rusty metal and unbathed " ,LFC " -- all the
-usual odors of the inside a space suit." CR>)
-		      (,BALLOON-ODOR
+usual odors of the inside a space suit." CR>)>>
+
+<ROUTINE V-SMELL ()
+	 <COND (<OR <NOT ,PRSO>
+		    <PRSO? ,AIR>>
+		<COND (,BALLOON-ODOR
 		       <TELL
-"The nauseating odor of burnt digestive gas is thankfully fading." CR>)
+"The awful odor of the " ,BALLOON "'s digestive gas is thankfully fading." CR>)
 		      (<AND <EQUAL? ,HERE ,GREASY-STRAW>
 			    <IN? ,NECTAR ,LOCAL-GLOBALS>>
 		       <TELL "There's something yum-smelling around here!" CR>)
@@ -1611,6 +1763,9 @@ usual odors of the inside a space suit." CR>)
 		       <TELL
 "There's an odor reminiscent of the video room at home on a night when your
 mom served Northern Gallium Bonzo Beans." CR>)
+		      (<AND <EQUAL? ,HERE ,COMMANDERS-QUARTERS>
+			    <FSET? ,SAFE ,OPENBIT>>
+		       <TELL "The odor of an explosion hangs in the air." CR>)
 		      (T
 		       <TELL "You smell nothing unusual just now." CR>)>)
 	       (T
@@ -1689,7 +1844,7 @@ mom served Northern Gallium Bonzo Beans." CR>)
 		<STUNNED "move that much">)
 	       (<UNTOUCHABLE? ,PRSO>
 		<CANT-REACH ,PRSO>)
-	       (<AND <NOT <FSET? ,PRSO ,PARTBIT>>
+	       (<AND <NOT <PRSI? ,HANDS ,TONGUE>>
 		     <PRE-LOOK>>
 		<RTRUE>)
 	       (<LOC-CLOSED>
@@ -1728,6 +1883,9 @@ mom served Northern Gallium Bonzo Beans." CR>)
 		       <DO-WALK ,P?OUT>)
 		      (T
 		       <RFALSE>)>)
+	       (<AND <PRSI? ,GARBAGE ,SCULPTURE>
+		     <IN? ,PRSO ,HERE>>
+		<RFALSE>)
 	       (<NOT <IN? ,PRSO ,PRSI>>
 		<NOT-IN>)
 	       (T
@@ -1798,9 +1956,12 @@ be fascinated to hear that." CR>
 	 <COND (<PRSO? ,ME>
 		<PERFORM ,V?WHAT ,PRSI>
 		<RTRUE>)
-	       (T
+	       (<VISIBLE? ,PRSI>
 		<PERFORM ,V?SHOW ,PRSI ,PRSO>
-		<RTRUE>)>>
+		<RTRUE>)
+	       (T
+		<SETG PRSI ,PRSO>
+		<V-SHOW>)>>
 
 <ROUTINE V-THANK ("AUX" OWINNER)
 	 <COND (<NOT ,PRSO>
@@ -1819,6 +1980,8 @@ be fascinated to hear that." CR>
 		<TELL "You lose sight of" T ,PRSO " as it sails away.">
 		<REMOVE-CAREFULLY ,PRSO>
 		<CRLF>)
+	       (<EQUAL? ,HERE ,TOP-OF-AIR-SHAFT ,AIR-SHAFT>
+		<V-DROP>)
 	       (,PRSI
 		<MOVE ,PRSO ,HERE>
 		<TELL "You missed." CR>)
@@ -1849,9 +2012,9 @@ be fascinated to hear that." CR>
 	       (T
 		<TELL "is impossible to determine, since you">
 		<COND (<NOT <FSET? ,CHRONOMETER ,WORNBIT>>
-		       <TELL "'ve removed your chronometer">)
+		       <TELL "'ve removed your " 'CHRONOMETER>)
 		      (T
-		       <TELL "r chronometer has stopped">)>)>
+		       <TELL "r " 'CHRONOMETER " has stopped">)>)>
 	 <COND (.NO-CR
 		<TELL ".">)
 	       (T
@@ -1901,8 +2064,6 @@ be fascinated to hear that." CR>
 		     <EQUAL? <NUMBER? ,P-CONT> ,W?NUMBER>>
 		<PERFORM ,V?TYPE ,INTNUM>
 		<STOP>)
-	       (<EQUAL? <GET ,P-NAMW 0> ,W?ONE ,W?TWO ,W?THREE>
-		<TELL ,TYPE-NUMERALS>)
 	       (T
 		<TELL "You can only type numbers on this keypad." CR>
 		<STOP>)>>
@@ -1949,14 +2110,24 @@ quivering, as though he were about to cry." CR>)>>
 		     <OR <IN? ,PROTAGONIST ,COPILOT-SEAT>
 		    	 <IN? ,FLOYD ,COPILOT-SEAT>>>
 	        <SETG COURSE-PICKED ,P-NUMBER>
-		<SET X </ ,INTERNAL-MOVES 10>>
-		;"next two steps round X to the lower 5"
-		<SET X </ .X 5>>
-		<SET X <* .X 5>>
-		<SET X <- .X 660>>
+		<COND (,DEBUG
+		       <TELL "[P-NUMBER = " N ,P-NUMBER ".]" CR>
+		       <TELL "[INTERNAL-MOVES = " N ,INTERNAL-MOVES ".]" CR>)>
+		<SET X </ ,INTERNAL-MOVES 50>>
+		<COND (,DEBUG
+		       <TELL "[X = " N .X ".]" CR>)>
+		<SET X <- .X 132>>
+		<COND (,DEBUG
+		       <TELL "[X = " N .X ".]" CR>)>
 		<SET X <* .X .X>>
-		<SET X </ .X 100>>
+		<COND (,DEBUG
+		       <TELL "[X = " N .X ".]" CR>)>
+		<SET X </ .X 4>>
+		<COND (,DEBUG
+		       <TELL "[X = " N .X ".]" CR>)>
 		<SETG RIGHT-COURSE <+ .X 103>>
+		<COND (,DEBUG
+		       <TELL "[RIGHT-COURSE = " N ,RIGHT-COURSE ".]" CR>)>
 		<QUEUE I-SPACETRUCK 33>
 		<RECORDING
 "Course set. Launch in approximately 30 millichrons">)
@@ -1966,24 +2137,27 @@ quivering, as though he were about to cry." CR>)>>
 the pilot and copilot seats are occupied">)>>
 
 <ROUTINE ELEVATOR-TYPE ("AUX" DISTANCE) 
-	 <COND (<EQUAL? ,ELEVATOR-LEVEL ,P-NUMBER>
-		<RECORDING "You are already at that level">)
-	       (<OR <G? ,P-NUMBER 9>
+	 <COND (<OR <G? ,P-NUMBER 9>
 		    <L? ,P-NUMBER 1>>
 		<RECORDING "Select a level between 1 and 9">)
-	       (<EQUAL? ,P-NUMBER 8 9>
-		<TELL "The elevator whines momentarily, but doesn't move." CR>)
 	       (<G? ,DAY 2>
 		<JIGS-UP
 "The instant you press the button, the elevator begins plunging down the shaft!
 It's worse than just free-fall; the elevator is actually in a power dive!!!
 You punch frantically at the keypad...">)
+	       (<EQUAL? ,ELEVATOR-LEVEL ,P-NUMBER>
+		<RECORDING "You are already at that level">)
+	       (<EQUAL? ,P-NUMBER 8 9>
+		<TELL "The elevator whines momentarily, but doesn't move." CR>)
 	       (T
 		<TELL "The elevator ">
 		<COND (<EQUAL? ,DAY 1>
 		       <TELL "glides weightlessly ">)
 		      (T
-		       <TELL "starts with a jerk, moving ">)>
+		       <TELL "starts with a jerk, ">
+		       <COND (<G? ,P-NUMBER ,ELEVATOR-LEVEL>
+			      <TELL "bumping you against the ceiling, ">)>
+		       <TELL "then moves ">)>
 		<COND (<G? ,P-NUMBER ,ELEVATOR-LEVEL>
 		       <TELL "down">
 		       <SET DISTANCE <- ,P-NUMBER ,ELEVATOR-LEVEL>>)
@@ -1991,8 +2165,6 @@ You punch frantically at the keypad...">)
 		       <TELL "up">
 		       <SET DISTANCE <- ,ELEVATOR-LEVEL ,P-NUMBER>>)>
 		;"set C-ELAPSED to 5 times the # of floors you're moving"
-		<SETG C-ELAPSED <* 5 .DISTANCE>>
-		<SETG ELEVATOR-LEVEL ,P-NUMBER>
 		<TELL " the shaft, stopping ">
 		<COND (<EQUAL? ,DAY 2>
 		       <TELL "suddenly ">)>
@@ -2001,6 +2173,12 @@ You punch frantically at the keypad...">)
 		       <TELL "and not quite at level with your new floor">)
 		      (T
 		       <TELL "at another opening to the west">)>
+		<COND (<AND <EQUAL? ,DAY 2>
+			    <G? ,ELEVATOR-LEVEL ,P-NUMBER>>
+		       <TELL
+". The sudden stop bumps you against the ceiling of the weightless elevator">)>
+		<SETG C-ELAPSED <* 5 .DISTANCE>>
+		<SETG ELEVATOR-LEVEL ,P-NUMBER>
 		<COND (<IN? ,BALLOON ,ELEVATOR>
 		       <TELL
 ". The " D ,BALLOON " looks somewhat disoriented by the experience">)>
@@ -2029,8 +2207,8 @@ the dispenser hole." CR>)
 		<RECORDING "Error">)
 	       (T
 		<RECORDING
-"Sorry, that items is sold out. Please contact your PX Officer regarding
-re-stocking of dispenser">)>>
+"Sorry, that item is sold out. Please contact your PX Officer regarding
+restocking of dispenser">)>>
 
 <ROUTINE RECORDING (STRING)
 	 <COND (<PROB 33>
@@ -2052,8 +2230,13 @@ re-stocking of dispenser">)>>
 
 <ROUTINE V-UNLOCK ()
 	 <COND (<NOT <FSET? ,PRSO ,LOCKEDBIT>>
-		<TELL "But" T ,PRSO " isn't locked." CR>)
-	       (<NOT ,PRSI>
+		<COND (<AND <EQUAL? ,HERE ,THEATRE ,BRIG>
+			    <PRSO? ,PSEUDO-OBJECT>>
+		       T)
+		      (T
+		       <TELL "But" T ,PRSO " isn't locked." CR>
+		       <RTRUE>)>)>
+	 <COND (<NOT ,PRSI>
 		<COND (<ULTIMATELY-IN? ,KEY>
 		       <TELL "[with the key]" CR>
 		       <PERFORM ,V?UNLOCK ,PRSO ,KEY>
@@ -2062,7 +2245,9 @@ re-stocking of dispenser">)>>
 		       <SETG AWAITING-REPLY 1>
 		       <QUEUE I-REPLY <+ ,C-ELAPSED 2>>
 		       <TELL "Your nose is key-shaped, I suppose?" CR>)>)
-	       (,PRSI
+	       (<PRSI? ,KEY>
+		<TELL "This key doesn't unlock" TR ,PRSO>)
+	       (T
 		<IMPOSSIBLES>)>>
 
 <ROUTINE V-UNTIE ()
@@ -2075,7 +2260,7 @@ re-stocking of dispenser">)>>
 <ROUTINE PRE-VALIDATE ()
 	 <COND (<AND <NOT ,PRSI>
 		     <NOT <VISIBLE? ,VALIDATION-STAMP>>>
-		<TELL "You don't have a validation stamp!" CR>)
+		<TELL "You don't have a " 'VALIDATION-STAMP "!" CR>)
 	       (<AND <NOT ,PRSI>
 		     <NOT <ULTIMATELY-IN? ,VALIDATION-STAMP>>>
 		<TELL ,YNH TR ,VALIDATION-STAMP>)
@@ -2112,11 +2297,11 @@ re-stocking of dispenser">)>>
 		<PERFORM ,V?ENTER .VEHICLE>
 		<RTRUE>)
 	       (<FSET? .AV ,VEHBIT>
-		<TELL "You're not walking anywhere until you get ">
-		<COND (<OFF-VEHICLE? .AV>
-		       <TELL "off">)
+		<TELL "You're not walking anywhere until you get o">
+		<COND (<EQUAL? .AV ,BED>
+		       <TELL "ff">)
 		      (T
-		       <TELL "out of">)>
+		       <TELL "ut of">)>
 		<TELL TR .AV>
 		<RFATAL>)
 	       (<AND ,TIMER-CONNECTED
@@ -2193,7 +2378,7 @@ re-stocking of dispenser">)>>
 
 <ROUTINE DESCRIBE-AUTO-DOOR ()
 	 <COND (<EQUAL? ,HERE ,BRIG ,ARMORY>
-		<TELL "The security door ">)
+		<TELL "The " 'SECURITY-DOOR " ">)
 	       (T
 	 	<TELL "The auto-door ">)>
 	 <COND (<EQUAL? ,DAY 1>
@@ -2201,7 +2386,7 @@ re-stocking of dispenser">)>>
 	       (<G? ,DAY 2>
 		<TELL
 "opens barely wide enough for you to squeeze through. As you do so,
-the door tries to shut, jamming against you!">
+the door tries to shut, almost jamming against you!">
 		<COND (<NOT <FSET? ,AUTO-DOOR ,TOUCHBIT>>
 		       <FSET ,AUTO-DOOR ,TOUCHBIT>
 		       <TELL
@@ -2238,8 +2423,13 @@ generally the epitome of reliability.">)>)>
 	       (T
 		<V-WALK-AROUND>)>>
 
-<ROUTINE V-WAIT ("OPTIONAL" (NUM 3))
-	 <SETG C-ELAPSED 40>
+<ROUTINE V-WAIT () ;("OPTIONAL" (NUM 3))
+	 <SETG C-ELAPSED <COND (<VERB? WAIT-FOR>
+				,P-NUMBER)
+			       (<VERB? WAIT-UNTIL>
+				<- ,P-NUMBER ,INTERNAL-MOVES>)
+			       (T
+				40)>>
 	 <TELL "Time passes..." CR>
 	 ;<REPEAT ()
 		 <COND (<L? <SET NUM <- .NUM 1>> 0>
@@ -2253,6 +2443,9 @@ generally the epitome of reliability.">)>)>
 		<V-FOLLOW>)
 	       (T
 	 	<TELL "You may be waiting quite a while." CR>)>>
+
+<ROUTINE V-WAIT-UNTIL ()
+	 <TELL ,HUH>>
 
 <ROUTINE V-WEAR ()
          <COND (<NOT <FSET? ,PRSO ,WEARBIT>>
@@ -2332,7 +2525,7 @@ tag. Floyd knows rules for tag really well!\"" CR>)
 		     <G? <+ <WEIGHT ,PRSO> <WEIGHT ,PROTAGONIST>> 100>>
 		<COND (.VB
 		       <TELL
-"You're already carrying as much weight as you can manage." CR>)>
+"You're juggling just about as much stuff as you can manage." CR>)>
 		<RFATAL>)
 	       (<PROB <- <* <CCOUNT ,PROTAGONIST> 20> 150>>
 		;"holding 8 items,  10%
@@ -2342,6 +2535,9 @@ tag. Floyd knows rules for tag really well!\"" CR>)
 		<SET OBJ <FIRST? ,PROTAGONIST>>
 		<REPEAT ()
 			<COND (<FSET? .OBJ ,WORNBIT>
+			       <SET OBJ <NEXT? .OBJ>>)
+			      (<AND <EQUAL? .OBJ ,OSTRICH-NIP>
+				    <IN? ,OSTRICH ,HERE>>
 			       <SET OBJ <NEXT? .OBJ>>)
 			      (T
 			       <RETURN>)>>
@@ -2386,9 +2582,13 @@ tag. Floyd knows rules for tag really well!\"" CR>)
 		<COND (<AND <VERB? THROW>
 			    <PRSO? ,SWITCH>>
 		       <RFALSE>)
-		      (<OR <PRSO? ,ME>
-			   <FSET? ,PRSO ,PARTBIT>>
+		      (<PRSO? ,ME ,HANDS ,TONGUE>
 		       <IMPOSSIBLES>)
+		      (<AND <VERB? PUT>
+			    <PRSO? ,ID-READER>
+			    <ADJ-USED ,A?ID ,ID-READER>
+			    <EQUAL? <GET ,P-NAMW 0> <>>>
+		       <TELL ,YOU-CANT "see any ID card here!" CR>)
 		      (T
 		       <TELL
 "That's easy for you to say since you don't even have" TR ,PRSO>)>
@@ -2432,6 +2632,11 @@ tag. Floyd knows rules for tag really well!\"" CR>)
 
 <ROUTINE DESCRIBE-ROOM ("OPTIONAL" (VERB-IS-LOOK <>)
 			"AUX" (FIRST-VISIT <>) POINTS)
+	 <COND (<AND <SET POINTS <GETP ,HERE ,P?VALUE>>
+		     <G? .POINTS 0>>
+		<SETG ROBOT-EVILNESS <+ ,ROBOT-EVILNESS 1>>
+		<SETG SCORE <+ ,SCORE .POINTS>>
+		<PUTP ,HERE ,P?VALUE 0>)>
 	 <COND (<NOT ,LIT>
 		<TELL "It is pitch black. You ">
 		<COND (<EQUAL? ,HERE ,VACUUM-STORAGE>
@@ -2443,10 +2648,6 @@ and 2. whether they can tear through a space suit." CR>)
 "hope there are no grues aboard the station." CR>)>
 		<RFALSE> ;"so DESCRIBE-CONTENTS of room isn't called")
 	       (<NOT <FSET? ,HERE ,TOUCHBIT>>
-		<COND (<SET POINTS <GETP ,HERE ,P?VALUE>>
-		       <COND (<G? .POINTS 0>
-			      <SETG ROBOT-EVILNESS <+ ,ROBOT-EVILNESS 1>>)>
-		       <SETG SCORE <+ ,SCORE .POINTS>>)>
 		<COND (<NOT <EQUAL? ,HERE ,AIR-SHAFT>>
 		       <FSET ,HERE ,TOUCHBIT>)>
 		<SET FIRST-VISIT T>)>
@@ -2745,13 +2946,14 @@ are responsible for doing the beginning-of-paragraph indentation."
 		<DESCRIBE-OBJECTS>)>
 	 <COND (<AND <IN? ,OSTRICH .OLD-HERE>
 		     <ULTIMATELY-IN? ,OSTRICH-NIP>
-		     <VISIBLE? ,OSTRICH-NIP>> ;"close cont. to 'shake' ostrich"
+		     <VISIBLE? ,OSTRICH-NIP> ;"close cont. to 'shake' ostrich"
+		     <NOT <EQUAL? ,HERE ,TOP-OF-AIR-SHAFT>>>
 		<TELL "   The ostrich, sniffing excitedly, ">
 		<COND (<GLOBAL-IN? ,BED ,HERE>
 		       <TELL
-"follows you to the door, but hesitates as she notices the bed.
+"follows you to the door, but hesitates as it notices the bed.
 The ostrich, who refuses to enter any room with a bed due to a bad
-experience in her youth, withdraws." CR>
+experience in its youth, withdraws." CR>
 		       <RTRUE>)
 		      (<FSET? <LOC ,OSTRICH> ,WEIGHTLESSBIT>
 		       <TELL
@@ -2763,25 +2965,28 @@ experience in her youth, withdraws." CR>
 			   <AND <EQUAL? ,HERE ,EAST-CONNECTION>
 				<IN? ,OSTRICH ,MAKESHIFT-CONNECTOR>>
 			   <IN? ,OSTRICH ,ELEVATOR>>
-		       <TELL
+		       <COND (,LIT
+		       	      <TELL
 " As the ostrich crosses into gravity, it emits a surprised squawk and
 does a graceless bellyflop. As it struggles to its feet, it appears that
-only its dignity was injured.">)
+only its dignity was injured.">)>)
 		      (<OR <AND <EQUAL? ,HERE ,GRIMY-PASSAGE>
 				<IN? ,OSTRICH ,SOUTH-CONNECTION>>
 			   <AND <EQUAL? ,HERE ,MAKESHIFT-CONNECTOR>
 				<IN? ,OSTRICH ,EAST-CONNECTION>>
-			   <EQUAL? ,HERE ,ELEVATOR>>
-		       <TELL
+			   <AND <EQUAL? ,HERE ,ELEVATOR>
+				<FSET? ,ELEVATOR ,WEIGHTLESSBIT>>>
+		       <COND (,LIT
+		       	      <TELL
 " As the ostrich unexpectly enters the weightless environment of the ">
-		       <COND (<EQUAL? ,HERE ,ELEVATOR>
-			      <TELL "elevator">)
-			     (T
-			      <TELL "village">)>
-		       <TELL
-", it shoots into the air, sqawking loudly. It spins head over claw
-for a moment, thrashing its wings ineffectually, before finally acheiving
-a modicum of stability.">)>
+			      <COND (<EQUAL? ,HERE ,ELEVATOR>
+				     <TELL "elevator">)
+				    (T
+				     <TELL "village">)>
+			      <TELL
+", it shoots into the air, squawking loudly. It spins head over claw
+for a moment, thrashing its wings ineffectually, before finally achieving
+a modicum of stability.">)>)>
 		<MOVE ,OSTRICH ,HERE>
 		<CRLF>)>
 	 <RTRUE>>
@@ -2839,9 +3044,13 @@ a modicum of stability.">)>
 	 <COND (<NOT .OBJ>
 		<RFALSE>)
 	       (<AND ,HANGING-IN-AIR
-		     <IN? .OBJ ,HERE>
-		     <NOT <EQUAL? .OBJ ,STAR ,ETERNAL-FLAME>>>
-		<RTRUE>)
+		     <IN? .OBJ ,HERE>>
+		<COND (<OR <EQUAL? .OBJ ,BALLOON ,ETERNAL-FLAME>
+			   <AND <EQUAL? .OBJ ,STAR>
+				<FSET? .OBJ ,TRYTAKEBIT>>>
+		       <RFALSE>)
+		      (T
+		       <RTRUE>)>)
 	       (<IN? ,PROTAGONIST ,HERE>
 		<RFALSE>)
 	       (<OR <ULTIMATELY-IN? .OBJ <LOC ,PROTAGONIST>>
@@ -2935,6 +3144,9 @@ a modicum of stability.">)>
 	 <COND (<AND ,LIT
 		     <NOT <LIT? ,HERE>>>
 		<SETG LIT <>>
+		<COND (<AND ,P-IT-OBJECT
+			    <NOT <ULTIMATELY-IN? ,P-IT-OBJECT>>>
+		       <SETG P-IT-OBJECT <>>)>
 		<TELL "   It is now too dark to see." CR>)>>
 
 <ROUTINE NOW-LIT? ()

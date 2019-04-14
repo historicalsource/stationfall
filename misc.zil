@@ -186,7 +186,7 @@ the sequel...\""
 
 <ROUTINE GO () ;"NOTE: this routine CANNOT have any local variables"
 	 <SETG WINNER ,PROTAGONIST>
-	 <SETG HERE ,DECK-FIVE>
+	 <SETG HERE ,DECK-TWELVE>
 	 <SETG INTERNAL-MOVES <+ 4430 <RANDOM 1220>>>
 	 <SETG MOVES ,INTERNAL-MOVES>
 	 ;<COND (<EQUAL? <GETB 0 56> 0>
@@ -195,13 +195,14 @@ the sequel...\""
 		<SETG INTERNAL-MOVES 6860>)>
 	 <QUEUE I-SLEEP-WARNINGS <- 8100 ,INTERNAL-MOVES>>
 	 <QUEUE I-HUNGER-WARNINGS 1330>
+	 <QUEUE I-BLATHER -1>
 	 <TELL
 "It's been five years since your planetfall on Resida. Your heroics in saving
 that doomed world resulted in a big promotion, but your life of dull scrubwork
 has been replaced by a life of dull paperwork. Today you find yourself amidst
-the administrative maze of Deck Five on a typically exciting task: an emergency
-mission to Space Station Gamma Delta Gamma 777-G 59/59 Sector Alpha-Mu-79 to
-pick up a supply of " ,FORM-NAME ,ELLIPSIS>
+the administrative maze of Deck Twelve on a typically exciting task: an
+emergency mission to Space Station Gamma Delta Gamma 777-G 59/59 Sector
+Alpha-Mu-79 to pick up a supply of " ,FORM-NAME ,ELLIPSIS>
 	 <V-VERSION>
 	 <USL>
 	 <CRLF>
@@ -347,9 +348,7 @@ pick up a supply of " ,FORM-NAME ,ELLIPSIS>
 		     ,P-WON ;"fake YOU CANT SEE responses set P-WON to false">
 		<COND (<AND <RUNNING? ,I-SPACETRUCK>
 			    <L? ,SPACETRUCK-COUNTER 5>>
-		       <SETG C-ELAPSED 240>)
-		      (<QUEUED? ,I-TIMER>
-		       <SETG C-ELAPSED 10>)>
+		       <SETG C-ELAPSED 240>)>
 		<SET V <APPLY <GETP ,HERE ,P?ACTION> ,M-END>>)
 	       (T
 		<SETG C-ELAPSED 0>)>)
@@ -367,13 +366,14 @@ pick up a supply of " ,FORM-NAME ,ELLIPSIS>
 	 <COND (<NOT <EQUAL? ,C-ELAPSED 0>>
 		<SET V <CLOCKER>>)>
 	 <SETG POSTPONE-ATTACK <>>
-	 <SETG C-ELAPSED 7> ;"default length of move"
+	 <SETG FLOYD-TRYTAKEN <>>
 	 <SETG P-PRSA-WORD <>>
 	 ;"else, when input is just a direction, P-PRSA-WORD will remain
 	   whatever it was for the previous turn"
 	 <SETG PRSA <>>
 	 <SETG PRSO <>>
-	 <SETG PRSI <>>)>>
+	 <SETG PRSI <>>)>
+  <SETG C-ELAPSED 7> ;"default length of move">
 
 ;<ROUTINE TOO-DARK-FOR-IT? ()
 	 <COND (<AND <NOT ,LIT>
@@ -425,9 +425,9 @@ pick up a supply of " ,FORM-NAME ,ELLIPSIS>
 
 <ROUTINE CLOCKER-VERB? ()
 	 <COND (<NOT <EQUAL? ,PROTAGONIST ,WINNER>>
-		<RTRUE> ;"or else FLOYD, HELP doesn't run the clock")
-	       (<VERB? VERSION HELP SCORE $RECORD $UNRECORD $COMMAND $RANDOM
-		       SAVE RESTORE RESTART QUIT SCRIPT UNSCRIPT
+	 	<RTRUE> ;"or else FLOYD, HELP doesn't run the clock")
+	       (<VERB? VERSION HELP SCORE $RECORD $UNRECORD $COMMAND
+		       $RANDOM SAVE RESTORE RESTART QUIT SCRIPT UNSCRIPT
 		       BRIEF SUPER-BRIEF VERBOSE>
 		<RFALSE>)
 	       (T
@@ -661,7 +661,7 @@ pick up a supply of " ,FORM-NAME ,ELLIPSIS>
 	 <PUT .INT ,C-TICK .TICK>
 	 .INT>
 
-<ROUTINE CLOCKER ("AUX" E TICK RTN (FLG <>) (Q? <>) OWINNER)
+<ROUTINE CLOCKER ("AUX" E TICK RTN (FLG <>) (Q? <>) OWINNER X)
 	 ;<SETG ELAPSED-MOVES <+ ,ELAPSED-MOVES 1>>
 	 ;<COND (,DEBUG
 	 	<TELL "   [Elapsed time: " N ,C-ELAPSED " millichrons.]|">)>
@@ -700,7 +700,10 @@ pick up a supply of " ,FORM-NAME ,ELLIPSIS>
 							    1>>)>>
 				      <COND (<ZERO? .TICK>
 					     <PUT ,CLOCK-HAND ,C-RTN 0>)>
-				      <COND (<APPLY .RTN>
+				     ;<COND (<APPLY .RTN>
+					     <SET FLG T>)>
+				      <SET X <APPLY .RTN>>
+				      <COND (<NOT <ZERO? .X>>
 					     <SET FLG T>)>
 				      <COND (<AND <NOT .Q?>
 						  <NOT

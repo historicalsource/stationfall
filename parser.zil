@@ -190,7 +190,7 @@ with 'P-'. Local variables are not restricted in any way."
 	       <SET OLEN <GETB ,P-LEXV ,P-LEXWORDS>>)>
 	<SETG P-LEN <GETB ,P-LEXV ,P-LEXWORDS>>
 	<COND (<ZERO? ,P-LEN>
-	       <TELL "[I beg your pardon]" CR>
+	       <TELL "[I beg your pardon?]" CR>
 	       <RFALSE>)
 	      (<EQUAL? <GET ,P-LEXV .PTR> ,W?OOPS>
 	       <COND (<EQUAL? <GET ,P-LEXV <+ .PTR ,P-LEXELEN>> ;"rfix 36"
@@ -352,11 +352,10 @@ with 'P-'. Local variables are not restricted in any way."
 							 <+ <* .PTR 2> 2>>>>
 			      <PUTB ,P-VTBL 3 <GETB ,P-LEXV <+ .CNT 1>>>)
 			     (<OR <SET VAL <WT? .WRD ,PS?PREPOSITION 0>>
-				  <AND <OR <EQUAL? .WRD ,W?ALL ,W?ONE ,W?BOTH>
-					   <EQUAL? .WRD ,W?EVERYT>
-					   <WT? .WRD ,PS?ADJECTIVE>
-					   <WT? .WRD ,PS?OBJECT>>
-				       <SET VAL 0>>>
+				  <EQUAL? .WRD ,W?ALL ,W?ONE ,W?BOTH>
+				  <EQUAL? .WRD ,W?EVERYT>
+				  <WT? .WRD ,PS?ADJECTIVE>
+				  <WT? .WRD ,PS?OBJECT>>
 			      <COND (<AND .VAL
 					  <EQUAL? .WRD ,W?BACK>
 					  <NOT <EQUAL? .VERB ,ACT?HAND>>>
@@ -395,9 +394,8 @@ with 'P-'. Local variables are not restricted in any way."
 				   ;"Next expr added to fix FORD, TELL ME WHY"
 				   <EQUAL? ,WINNER ,PROTAGONIST>>
 			      <TELL
-"[The proper way to speak to other characters is CHARACTER, DO THIS.
-See the instruction manual section entitled \"Communicating With
-Infocom's Interactive Fiction.\"]" CR>
+"[The way to speak to other characters is described in the instruction manual
+section entitled \"Communicating With Infocom's Interactive Fiction.\"]" CR>
 			      <RFALSE>)
 			     (T
 			      <CANT-USE .PTR>
@@ -1019,7 +1017,8 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 				    (<AND <EQUAL? .WRD ,W?IT ,W?THEM>
 					  <ACCESSIBLE? ,P-IT-OBJECT>>
 				     <TELL D ,P-IT-OBJECT>)
-				    (<AND <EQUAL? .WRD ,W?HIM ,W?HIMSELF>
+				    (<AND <EQUAL? .WRD ,W?HIM ,W?HIMSELF
+						       ,W?HER ,W?HERSELF>
 					  <ACCESSIBLE? ,P-HIM-OBJECT>>
 				     <TELL D ,P-HIM-OBJECT>)
 				    ;(<AND <EQUAL? .WRD ,W?HER ,W?HERSELF>
@@ -1032,7 +1031,7 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 		<SET BEG <REST .BEG ,P-WORDLEN>>>>
 
 <ROUTINE NAME? (WRD)
-	 <COND (<EQUAL? .WRD ,W?FLOYD ,W?PLATO>
+	 <COND (<EQUAL? .WRD ,W?FLOYD ,W?PLATO ,W?OLIVER ,W?THERMOS>
 		<RTRUE>)
 	       (T
 		<RFALSE>)>>
@@ -1273,7 +1272,7 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 		  <SET PTR <REST .PTR ,P-WORDLEN>>
 		  <SET WRD .NW>)>>>
 
-<BUZZ ASS ASSHOLE BITCH BASTARD COCK COCKSU CUNT DAMN DAMNED
+<BUZZ ASS ASSHOLE BITCH BASTARD COCK COCKSU CUNT DAMN DAMNED 
       FUCK FUCKED FUCKING SHIT SHITHEAD SHITTY TROT KRIP MEGAKRIP TROTTING>
 
 <ROUTINE NAUGHTY-WORD? (WORD)
@@ -1293,8 +1292,8 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 <ROUTINE ADJ-CHECK (WRD ADJ ADJN)
 	 <COND (<NOT .ADJ>
 		<RTRUE>)
-	       (<EQUAL? .WRD ,W?INNER ,W?OUTER ,W?LARGE ,W?SMALL
-			     ,W?TWELVE ,W?TWENTY>
+	       (<EQUAL? .WRD ,W?INNER ,W?OUTER ,W?LARGE ,W?SMALL ,W?MEDIUM
+			     ,W?TWELVE ,W?TWENTY ,W?PROCESSING ,W?DISPEN>
 		<RTRUE>)
 	       (T
 		<RFALSE>)>>		
@@ -1334,10 +1333,11 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 	       <COND (.GCHECK
 		      <GLOBAL-CHECK .TBL>)
 		     (T
-		      <COND (<OR ,LIT <VERB? TELL>>
-			     <FCLEAR ,WINNER ;,PROTAGONIST ,TRANSBIT>
+		      <COND (<OR ,LIT
+				 <VERB? TELL>>
+			     <FCLEAR ,WINNER ;,PROTAGONIST ,OPENBIT>
 			     <DO-SL ,HERE ,SOG ,SIR>
-			     <FSET ,WINNER ;,PROTAGONIST ,TRANSBIT>)
+			     <FSET ,WINNER ;,PROTAGONIST ,OPENBIT>)
 			    (<AND <FSET? <LOC ,WINNER ;,PROTAGONIST> ,VEHBIT>
 				  <THIS-IT? <LOC ,WINNER ;,PROTAGONIST>>>
 			     <OBJ-FOUND <LOC ,WINNER ;,PROTAGONIST> .TBL>)>
@@ -1402,8 +1402,7 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 		      <COND (.VRB
 			     <SETG P-SLOCBITS .XBITS>
 			     <COND (<OR ,LIT
-					<EQUAL? ,PRSA ,V?TELL>
-					<EQUAL? ,PRSA ,V?WHERE ,V?WHAT>>
+				       <EQUAL? ,PRSA ,V?TELL ,V?WHERE ,V?WHAT>>
 				    ;"Changed 6/10/83 - MARC"
 				    <OBJ-FOUND ,NOT-HERE-OBJECT .TBL>
 				    <SETG P-XNAM ,P-NAM>
@@ -1418,7 +1417,9 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 		      <SETG P-NAM <>>
 		      <SETG P-ADJ <>>
 		      <RFALSE>)
-		     (<ZERO? .LEN> <SET GCHECK T> <AGAIN>)>
+		     (<ZERO? .LEN>
+		      <SET GCHECK T>
+		      <AGAIN>)>
 	       <SETG P-SLOCBITS .XBITS>
 	       <PUT-ADJ-NAM>
 	       <SETG P-NAM <>>
@@ -1481,7 +1482,12 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 		<RTRUE>)>
 	 <SET RLEN .LEN>
 	 <COND (<NOT <EQUAL? ,WINNER ,PROTAGONIST>>
-		<TELL "\"I don't understand whether you mean ">)
+		<TELL "\"I don't understand wh">
+		<COND (<EQUAL? ,P-ADJ ,W?YOUR ,W?MY>
+		       <TELL "at you mean!\"" CR>
+		       <RTRUE>)
+		      (T
+		       <TELL"ether you mean ">)>)
 	       (T
 		<TELL "[Which">
 		<COND (<OR ,P-OFLAG
@@ -1493,7 +1499,13 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 		       <CLAUSE-PRINT ,P-NC1 ,P-NC1L <>>)
 		      (T
 		       <CLAUSE-PRINT ,P-NC2 ,P-NC2L <>>)>
-		<TELL " do you mean, ">)>
+		<TELL " do you mean">
+		<COND (<AND <EQUAL? ,HERE ,ROBOT-POOL>
+			    <EQUAL? ,P-NAM ,W?ROBOT>>
+		       <TELL "?]" CR>
+		       <RTRUE>)
+		      (T
+		       <TELL ", ">)>)>
 	 <REPEAT ()
 		 <SET TLEN <+ .TLEN 1>>
 		 <SET OBJ <GET .TBL .TLEN>>
