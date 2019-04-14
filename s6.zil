@@ -1,0 +1,28 @@
+"S6 for
+			      STATIONFALL
+	(c) Copyright 1987 Infocom, Inc.  All Rights Reserved."
+
+<PRINC "
+ *** S6: Stationfall ***
+">
+
+ON!-INITIAL
+OFF!-INITIAL	;"makes debugging possible -- pdl"
+
+<SET REDEFINE T>
+
+<SETG NEW-VOC? T>
+
+<FREQUENT-WORDS?>
+
+<INSERT-FILE "MISC" T>
+<INSERT-FILE "PARSER" T>
+<INSERT-FILE "SYNTAX" T>
+<INSERT-FILE "VERBS" T>
+<INSERT-FILE "GLOBALS" T>
+<INSERT-FILE "SHIP" T>
+<INSERT-FILE "STATION" T>
+<INSERT-FILE "VILLAGE" T>
+
+<PROPDEF SIZE 5>
+<PROPDEF CAPACITY 5>
