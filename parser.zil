@@ -166,7 +166,7 @@ with 'P-'. Local variables are not restricted in any way."
 			   <EQUAL? ,PROTAGONIST ,WINNER>>
 		      <CRLF>)>
 	       <SETG RESERVE-PTR <>>
-	       <SETG P-CONT <>>)
+	       ;<SETG P-CONT <>> ;"retrofix 59")
 	      (,P-CONT
 	       <SET PTR ,P-CONT>
 	       ;<COND (<AND <NOT <EQUAL? ,VERBOSITY 0>>
@@ -176,7 +176,7 @@ with 'P-'. Local variables are not restricted in any way."
 			   <NOT ,ELIMINATE-CR>>
 		      <CRLF>)>
 	       <SETG ELIMINATE-CR <>>
-	       <SETG P-CONT <>>)
+	       ;<SETG P-CONT <>> ;"retrofix 59")
 	      (T
 	       <SETG WINNER ,PROTAGONIST>
 	       <SETG QUOTE-FLAG <>>
@@ -186,6 +186,8 @@ with 'P-'. Local variables are not restricted in any way."
 	       <COND (<NOT <EQUAL? ,VERBOSITY 0>>
 		      <CRLF>)>
 	       <TELL ">">
+	       <COND (<ZERO? <GET ,OOPS-TABLE ,O-PTR>>
+		      <PUT ,OOPS-TABLE ,O-END <>>)> ;"retrofix 59"
 	       <READ ,P-INBUF ,P-LEXV>
 	       <SET OLEN <GETB ,P-LEXV ,P-LEXWORDS>>)>
 	<SETG P-LEN <GETB ,P-LEXV ,P-LEXWORDS>>
@@ -218,10 +220,14 @@ with 'P-'. Local variables are not restricted in any way."
 		      <PUT ,OOPS-TABLE ,O-END <>>
 		      <TELL "[There was no word to replace!]" CR>
 		      <RFALSE>)>)
-	      (T
+	      (<ZERO? ,P-CONT> ;"retrofix 58"
 	       <PUT ,OOPS-TABLE ,O-END <>>)>
+	<SETG P-CONT <>> ;"retrofix 59"
 	<COND (<EQUAL? <GET ,P-LEXV .PTR> ,W?AGAIN ,W?G>
-	       <COND (,P-OFLAG
+	       <COND (<ZERO? <GETB ,OOPS-INBUF 1>>
+		      <TELL "[What do you want to do again?]" CR>
+		      <RFALSE>)
+		     (,P-OFLAG
 		      <CANT-USE-THAT-WAY "AGAIN">
 		      <RFALSE>)
 		     (<NOT ,P-WON>
@@ -229,7 +235,7 @@ with 'P-'. Local variables are not restricted in any way."
 		      <RFALSE>)
 		     (<AND <NOT <EQUAL? .OWINNER ,PROTAGONIST>>
 			   <NOT <VISIBLE? .OWINNER>>>
-		      <TELL "[" ,YOU-CANT "see " D .OWINNER " any more.]" CR>
+		      <TELL "[You can't see " D .OWINNER " any more.]" CR>
 		      <RFALSE>)
 		     (<G? ,P-LEN 1>
 		      <COND (<OR <EQUAL? <GET ,P-LEXV <+ .PTR ,P-LEXELEN>>
@@ -271,8 +277,10 @@ with 'P-'. Local variables are not restricted in any way."
 	       <PUT ,OOPS-TABLE ,O-LENGTH <* 4 ,P-LEN>> ;"fix #36"
 	       <SET LEN
 		    <* 2 <+ .PTR <* ,P-LEXELEN <GETB ,P-LEXV ,P-LEXWORDS>>>>>
-	       <PUT ,OOPS-TABLE ,O-END <+ <GETB ,P-LEXV <- .LEN 1>>
-					  <GETB ,P-LEXV <- .LEN 2>>>>
+	       <COND (<ZERO? <GET ,OOPS-TABLE ,O-END>> ;"retrofix 58"
+		      <PUT ,OOPS-TABLE ,O-END
+			   <+ <GETB ,P-LEXV <- .LEN 1>>
+			      <GETB ,P-LEXV <- .LEN 2>>>>)>
 	       <SETG RESERVE-PTR <>>
 	       <SET LEN ,P-LEN>
 	       ;<SETG P-DIR <>>
@@ -342,14 +350,17 @@ with 'P-'. Local variables are not restricted in any way."
 				     <RETURN>)>)
 			     (<AND <SET VAL <WT? .WRD ,PS?VERB ,P1?VERB>>
 				   <NOT .VERB>>
-			      <SETG P-PRSA-WORD .WRD>
+			      <COND (<ZERO? ,P-OFLAG>
+				     <SETG P-PRSA-WORD .WRD>)
+				    ;(T
+				     <SETG P-PRSA-WORD
+					   <GET <GET ,P-ITBL ,P-VERBN> 0>>)>
 			      <SET VERB .VAL>
 			      <PUT ,P-ITBL ,P-VERB .VAL>
 			      <PUT ,P-ITBL ,P-VERBN ,P-VTBL>
 			      <PUT ,P-VTBL 0 .WRD>
-			      <PUTB ,P-VTBL 2 <GETB ,P-LEXV
-						    <SET CNT
-							 <+ <* .PTR 2> 2>>>>
+			      <PUTB ,P-VTBL 2
+				    <GETB ,P-LEXV <SET CNT <+ <* .PTR 2> 2>>>>
 			      <PUTB ,P-VTBL 3 <GETB ,P-LEXV <+ .CNT 1>>>)
 			     (<OR <SET VAL <WT? .WRD ,PS?PREPOSITION 0>>
 				  <EQUAL? .WRD ,W?ALL ,W?ONE ,W?BOTH>
@@ -517,7 +528,11 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 			     <SET OFFS <+ .OFFS 1>>)>
 		      <GETB .PTR .OFFS>)>)>>
 
-<ROUTINE NEXT-WORD (PTR "AUX" NW)
+<ROUTINE NEXT-WORD (PTR)
+	 <COND (<NOT <ZERO? ,P-LEN>>
+	        <GET ,P-LEXV <+ .PTR ,P-LEXELEN>>)>>
+
+;<ROUTINE NEXT-WORD (PTR "AUX" NW)
 	 <COND (<NOT <ZERO? ,P-LEN>>
 	        <COND (<SET NW <GET ,P-LEXV <+ .PTR ,P-LEXELEN>>>
 		       .NW)
@@ -531,8 +546,11 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 	       <PUT ,P-ITBL <SET NUM <+ ,P-PREP1 .OFF>> .VAL>
 	       <PUT ,P-ITBL <+ .NUM 1> .WRD>
 	       <SET PTR <+ .PTR ,P-LEXELEN>>)
-	      (T <SETG P-LEN <+ ,P-LEN 1>>)>
-	<COND (<ZERO? ,P-LEN> <SETG P-NCN <- ,P-NCN 1>> <RETURN -1>)>
+	      (T
+	       <SETG P-LEN <+ ,P-LEN 1>>)>
+	<COND (<ZERO? ,P-LEN>
+	       <SETG P-NCN <- ,P-NCN 1>>
+	       <RETURN -1>)>
 	<PUT ,P-ITBL <SET NUM <+ ,P-NC1 .OFF>> <REST ,P-LEXV <* .PTR 2>>>
 	<REPEAT ()
 		<COND (<L? <SETG P-LEN <- ,P-LEN 1>> 0>
@@ -541,7 +559,8 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 		<SET WRD <GET ,P-LEXV .PTR>>
 		<COND (<NAUGHTY-WORD? .WRD>
 		       <RFALSE>)
-		      (<OR .WRD <SET WRD <NUMBER? .PTR>>>
+		      (<OR .WRD
+			   <SET WRD <NUMBER? .PTR>>>
 		       <SET NW <NEXT-WORD .PTR>>
 		       <COND (<AND .FIRST?? ;"fix 'lie down on...'"
 				   <OR <EQUAL? .WRD ,W?THE ,W?A ,W?AN>
@@ -567,8 +586,7 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 				          ;"ADDED 4/27 FOR TURTLE,UP"
 				       <NOT .FIRST??>>>
 			      <SETG P-LEN <+ ,P-LEN 1>>
-			      <PUT ,P-ITBL
-				   <+ .NUM 1>
+			      <PUT ,P-ITBL <+ .NUM 1>
 				   <REST ,P-LEXV <* .PTR 2>>>
 			      <RETURN <- .PTR ,P-LEXELEN>>)
 			     ;"This next clause was 2 clauses further down"
@@ -618,7 +636,9 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 			     (T
 			      <CANT-USE .PTR>
 			      <RFALSE>)>)
-		      (T <UNKNOWN-WORD .PTR> <RFALSE>)>
+		      (T
+		       <UNKNOWN-WORD .PTR>
+		       <RFALSE>)>
 		<SET LW .WRD>
 		<SET FIRST?? <>>
 		<SET PTR <+ .PTR ,P-LEXELEN>>>> 
@@ -627,9 +647,10 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 	 <SET CNT <GETB <REST ,P-LEXV <* .PTR 2>> 2>>
 	 <SET BPTR <GETB <REST ,P-LEXV <* .PTR 2>> 3>>
 	 <REPEAT ()
-		 <COND (<G? .SUM 10000> <RFALSE>)
-		       (<L? <SET CNT <- .CNT 1>> 0>
+		 <COND (<L? <SET CNT <- .CNT 1>> 0>
 			<RETURN>)
+		       (<G? .SUM 6553>
+			<RFALSE>)
 		       (T
 			<SET CHR <GETB ,P-INBUF .BPTR>>
 			<COND (<AND <L? .CHR 58>
@@ -695,7 +716,8 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 			<SET BPTR <+ .BPTR 1>>)>>
 	 <COND (<NOT <EQUAL? .CCTR 3>> ;"only handles 3 digits after the comma"
 		<RFALSE>)
-	       (<ZERO? .SUM> ;"if it returned 0, the calling predicate becomes <>"
+	       (<ZERO? .SUM>
+		;"if it returned 0, the calling predicate becomes <>"
 		<RETURN 1000>)
 	       (T
 		<RETURN .SUM>)>>
@@ -704,9 +726,13 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 
 <ROUTINE ORPHAN-MERGE ("AUX" (CNT -1) TEMP VERB BEG END (ADJ <>) (VRB <>) WRD) 
    <SETG P-OFLAG <>>
-   <COND (<EQUAL? <WT? <SET WRD <GET <GET ,P-ITBL ,P-VERBN> 0>>
+   <COND (<OR <EQUAL? <WT? <SET WRD <GET <GET ,P-ITBL ,P-VERBN> 0>>
 			   ,PS?VERB ,P1?VERB>
 		      <GET ,P-OTBL ,P-VERB>>
+	      <WT? .WRD ,PS?ADJECTIVE>>
+	  ;<EQUAL? <WT? <SET WRD <GET <GET ,P-ITBL ,P-VERBN> 0>>
+			   ,PS?VERB ,P1?VERB>
+		      <GET ,P-OTBL ,P-VERB>> ;"old predicate, axed for rfix 45"
 	  <SET VRB T>
 	  <SET ADJ T>)
 	 (<WT? .WRD ,PS?ADJECTIVE>
@@ -822,6 +848,8 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 			<SET BUF <+ .BUF 1>>)>>>
 
 <ROUTINE UNKNOWN-WORD (PTR "AUX" BUF)
+	<COND (<T? ,P-OFLAG>
+	       <PUT ,OOPS-TABLE ,O-END 0>)>
 	<PUT ,OOPS-TABLE ,O-PTR .PTR>
 	<TELL "[I don't know the word \"">
 	<WORD-PRINT <GETB <REST ,P-LEXV <SET BUF <* .PTR 2>>> 2>
@@ -834,8 +862,7 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 	<TELL "[You used the word \"">
 	<WORD-PRINT <GETB <REST ,P-LEXV <SET BUF <* .PTR 2>>> 2>
 		    <GETB <REST ,P-LEXV .BUF> 3>>
-	<TELL "\" in a way that I don't understand.]" CR>
-	<STOP>>
+	<TELL "\" in a way that I don't understand.]" CR>>
 
 ;" Perform syntax matching operations, using P-ITBL as the source of
    the verb and adjectives for this input.  Returns false if no
@@ -1001,7 +1028,8 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 			     (<EQUAL? .WRD ,W?ME ,W?MYSELF>
 			      <PRINTD ,ME>
 			      <SET PN T>)
-			     (<NAME? .WRD>
+			     (<OR <NAME? .WRD>
+				  <EQUAL? .WRD ,W?THERMOS>>
 			      <CAPITALIZE .BEG>
 			      <SET PN T>)
 			     (T
@@ -1031,7 +1059,7 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 		<SET BEG <REST .BEG ,P-WORDLEN>>>>
 
 <ROUTINE NAME? (WRD)
-	 <COND (<EQUAL? .WRD ,W?FLOYD ,W?PLATO ,W?OLIVER ,W?THERMOS>
+	 <COND (<EQUAL? .WRD ,W?FLOYD ,W?PLATO ,W?OLIVER>
 		<RTRUE>)
 	       (T
 		<RFALSE>)>>
@@ -1438,7 +1466,7 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
   <SET ADJ ,P-ADJ>
   <SETG P-NAM ,P-XNAM>
   <SETG P-ADJ ,P-XADJ>
-  <COND (,DEBUG
+  ;<COND (,DEBUG
 	 <TELL "[MOBY-FINDing; P-NAM=">
 	 <PRINTB ,P-NAM>
 	 <TELL "]" CR>)>
@@ -1483,7 +1511,7 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 	 <SET RLEN .LEN>
 	 <COND (<NOT <EQUAL? ,WINNER ,PROTAGONIST>>
 		<TELL "\"I don't understand wh">
-		<COND (<EQUAL? ,P-ADJ ,W?YOUR ,W?MY>
+		<COND (<EQUAL? ,P-ADJ ,A?YOUR ,A?MY ,A?PURPOS>
 		       <TELL "at you mean!\"" CR>
 		       <RTRUE>)
 		      (T
@@ -1686,9 +1714,9 @@ OOPS-INBUF, leaving the appropriate pointers in AGAIN-LEXV"
 			  T)
 			 (T
 			  <SETG PRSO .OBJ>
-			  <COND (<FSET? .OBJ ,TRYTAKEBIT>
-				 <SET TAKEN T>)
-				(<UNTOUCHABLE? .OBJ>
+			  <COND (<OR <FSET? .OBJ ,TRYTAKEBIT>
+				     <UNTOUCHABLE? .OBJ>
+				     ,STUNNED>
 				 <SET TAKEN T>)
 				(<NOT <EQUAL? ,WINNER ,PROTAGONIST>>
 				 <SET TAKEN <>>)

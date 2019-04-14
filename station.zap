@@ -44,7 +44,7 @@
 ?CCL11:	EQUAL?	PRSA,V?PUT \?CCL13
 	EQUAL?	PRSI,JAMMER \?CCL13
 	EQUAL?	PRSO,TWENTY-PRONG-FROMITZ-BOARD /?CCL13
-	CALL	DOESNT-FIT,STR?227
+	CALL	DOESNT-FIT,STR?236
 	RSTACK	
 ?CCL13:	EQUAL?	PRSA,V?CONNECT \?CCL18
 	EQUAL?	TWENTY-PRONG-FROMITZ-BOARD,PRSO,PRSI \?CCL18
@@ -104,7 +104,7 @@
 	REMOVE	COIN
 	FSET	DISPENSER,TOUCHBIT
 	PRINTR	"""Clink!"" The coin drops into the slot."
-?CCL10:	CALL	DOESNT-FIT,STR?232
+?CCL10:	CALL	DOESNT-FIT,STR?241
 	RSTACK	
 ?CCL5:	EQUAL?	PRSA,V?DRILL \?CCL12
 	PRINTI	"We quote from the Stellar Patrol Demolitions Training Manual, Edition 3754-GS108. ""Why You Should Never Drill Into Active Machinery: Reason #7. You may"
@@ -112,7 +112,7 @@
 	PRINTI	"""
    As you drill into the dispenser, you"
 	PRINT	STRIKE-POWER-SOURCE
-	CALL	JIGS-UP,STR?233
+	CALL	JIGS-UP,STR?242
 	RSTACK	
 ?CCL12:	EQUAL?	PRSA,V?SHOOT \?CCL14
 	REMOVE	DISPENSER
@@ -204,7 +204,7 @@
 	FIRST?	DISPENSER \FALSE
 	INC	'ROBOT-EVILNESS
 	ADD	SCORE,6 >SCORE
-	PRINTI	" It jerks its head back out, squawking even louder, and a moment later a "
+	PRINTI	" It jerks its head back out, squawking even more loudly, and a moment later a "
 	FIRST?	DISPENSER /?KLU4
 ?KLU4:	PRINTD	STACK
 	PRINTI	" falls out of the hole"
@@ -233,9 +233,9 @@
 	PRINT	NEXT-TIME
 	RTRUE	
 ?CCL13:	EQUAL?	PRSI,INTNUM /?CCL15
-	PRINTR	"You can only set the timer to a number!"
+	PRINTR	"You can set the timer only to a number!"
 ?CCL15:	GRTR?	P-NUMBER,100 \?CCL17
-	PRINTR	"The timer only has settings up to 100."
+	PRINTR	"The timer has settings up to only 100."
 ?CCL17:	SET	'TIMER-SETTING,P-NUMBER
 	PRINTI	"You set the timer to "
 	PRINTN	TIMER-SETTING
@@ -250,8 +250,8 @@
 ?CCL10:	EQUAL?	PRSA,V?DISCONNECT \?CCL22
 	ZERO?	PRSI \?CCL22
 	ZERO?	TIMER-CONNECTED /?CCL22
-	CALL	PERFORM-PRSA,TIMER,DETONATOR
-	RSTACK	
+	CALL	PERFORM,PRSA,TIMER,DETONATOR
+	RTRUE	
 ?CCL22:	EQUAL?	PRSA,V?CONNECT \?CCL27
 	EQUAL?	EXPLOSIVE,PRSO,PRSI \?CCL27
 	PRINT	YOU-CANT
@@ -268,80 +268,14 @@
 	PRINTR	"""Tick, tick..."""
 
 
-	.FUNCT	I-TIMER,?TMP1
-	CALL	QUEUE,I-TIMER,-1
-	SUB	TIMER-SETTING,C-ELAPSED >TIMER-SETTING
-	LESS?	TIMER-SETTING,1 \?CND1
-	CALL	DEQUEUE,I-TIMER
-	SET	'TIMER-SETTING,0
-?CND1:	CALL	VISIBLE?,TIMER
-	ZERO?	STACK /?CND3
-	PRINTI	"   The timer reaches "
-	PRINTN	TIMER-SETTING
-	ZERO?	TIMER-SETTING \?CND5
-	PRINTI	" and stops ticking"
-?CND5:	PRINTC	46
-?CND3:	ZERO?	TIMER-SETTING \?CND7
-	ZERO?	TIMER-CONNECTED /?CND7
-	LOC	DIODE-M >?TMP1
-	LOC	DIODE-J
-	EQUAL?	DETONATOR,?TMP1,STACK \?CND7
-	IN?	DIODE-J,DETONATOR \?CCL14
-	MOVE	DIODE-J,LOCAL-GLOBALS
-	CALL	VISIBLE?,DETONATOR
-	ZERO?	STACK /?CND7
-	PRINTI	" You hear a sizzling sound from the detonator"
-	FSET?	SPACESUIT,WORNBIT /?CND17
-	PRINTI	", and a burnt odor assaults your nose"
-?CND17:	PRINTC	46
-	JUMP	?CND7
-?CCL14:	ZERO?	EXPLOSIVE-CONNECTED /?CCL20
-	CALL	META-LOC,EXPLOSIVE
-	EQUAL?	STACK,HERE \?CCL23
-	PRINTI	" The explosive fulfills its destiny by exploding. You simultaneously fulfill your own destiny: turning into itsy-bitsy pieces of "
-	PRINT	LFC
-	CALL	JIGS-UP,STR?46
-	JUMP	?CND21
-?CCL23:	IN?	EXPLOSIVE,DRILLED-HOLE \?CCL25
-	RANDOM	200
-	ADD	STACK,20
-	CALL	QUEUE,I-LIGHTS-OUT,STACK
-	FSET	SAFE,OPENBIT
-	FSET	SAFE,TOUCHBIT
-	FCLEAR	SAFE,LOCKEDBIT
-	JUMP	?CND21
-?CCL25:	LOC	EXPLOSIVE
-	IN?	STACK,ROOMS /?CND21
-	CALL	DESTROY-EXPLOSIVE-CONT
-?CND21:	CALL	NEXT-ROOM?,TIMER
-	ZERO?	STACK /?CCL29
-	PRINTI	"   You hear a deafening explosion from very nearby!"
-	CRLF	
-	JUMP	?CND27
-?CCL29:	PRINTI	"   You hear a loud but distant explosion."
-	CRLF	
-?CND27:	REMOVE	TIMER
-	REMOVE	EXPLOSIVE
-	REMOVE	DETONATOR
-	JUMP	?CND7
-?CCL20:	CALL	VISIBLE?,TIMER
-	ZERO?	STACK /?CND7
-	PRINTI	" You hear a click from the detonator."
-?CND7:	CALL	VISIBLE?,TIMER
-	ZERO?	STACK /FALSE
-	CRLF	
-	RTRUE	
-
-
-	.FUNCT	DESTROY-EXPLOSIVE-CONT,L
+	.FUNCT	DESTROY-EXPLOSIVE-CONT,L,X
 	LOC	EXPLOSIVE >L
-?PRG1:	LOC	L
-	IN?	STACK,ROOMS \?CND3
+?PRG1:	IN?	L,ROOMS /TRUE
+	FSET?	L,VEHBIT /TRUE
+	LOC	L >X
+	EQUAL?	L,PEDESTAL /?CND7
 	REMOVE	L
-	EQUAL?	L,PEDESTAL \TRUE
-	MOVE	L,ALIEN-SHIP
-	RTRUE	
-?CND3:	LOC	L >L
+?CND7:	SET	'L,X
 	JUMP	?PRG1
 
 
@@ -357,13 +291,13 @@
 	EQUAL?	PRSA,V?PICK,V?UNLOCK,V?OPEN \?CCL3
 	EQUAL?	PRSI,KEY \?CCL6
 	SET	'PRSO,KEY
-	CALL	DOESNT-FIT,STR?237
+	CALL	DOESNT-FIT,STR?246
 	RSTACK	
 ?CCL6:	CALL	YUKS
 	RSTACK	
 ?CCL3:	EQUAL?	PRSA,V?PUT \FALSE
 	EQUAL?	PRSO,KEY \FALSE
-	CALL	DOESNT-FIT,STR?237
+	CALL	DOESNT-FIT,STR?246
 	RSTACK	
 
 
@@ -374,7 +308,7 @@
 	PRINTI	"frozen open, revealing not a sub-module connector but a small, grimy connector"
 	JUMP	?CND4
 ?CCL6:	PRINTI	"shut tight"
-?CND4:	PRINTI	". Next to the hatch is a slot. There is a door northwest of here, and doorways to the south and southwest."
+?CND4:	PRINTI	". Next to the hatch is a slot. There is a door northwest of here, and doorways to the south and southwest. There's a junction in the corridor west of you."
 	RTRUE	
 
 
@@ -394,6 +328,9 @@
 
 	.FUNCT	SYSTEM-MONITORS-F
 	EQUAL?	PRSA,V?READ,V?EXAMINE \FALSE
+	GET	0,8
+	BOR	STACK,2
+	PUT	0,8,STACK
 	PRINTI	"System:           Status:
 COMMUNICATION     "
 	GRTR?	DAY,2 \?CCL6
@@ -434,16 +371,23 @@ POWER             "
 ?CND19:	PRINTI	"
 PRINTING          "
 	EQUAL?	DAY,1 \?CCL27
-	PRINTR	"YELLOW"
+	PRINTI	"YELLOW"
+	JUMP	?CND25
 ?CCL27:	GRTR?	DAY,3 \?CCL29
-	PRINTR	"GREEN"
-?CCL29:	PRINTR	"RED"
+	PRINTI	"GREEN"
+	JUMP	?CND25
+?CCL29:	PRINTI	"RED"
+?CND25:	CRLF	
+	GET	0,8
+	BAND	STACK,-3
+	PUT	0,8,STACK
+	RTRUE	
 
 
 	.FUNCT	COMM-CENTER-F,RARG
 	EQUAL?	RARG,M-LOOK \FALSE
 	PRINTI	"This is the Deep-Space Communication Center, which keeps the station in touch with the Stellar Patrol Command and the rest of the Third Galactic Union. Although regulations state that the Comm Center must be monitored around the clock, ten chrons per day, there's no one on duty.
-   Most of the equipment here is too complicated for anyone without Deep-Space Communications Training to use. However, the red button of the wide-band emergency beacon is well-marked. Next to the button is a large screen for displaying incoming messages. "
+   Most of the equipment here is too complicated for anyone without Deep-Space Communication Training to use. However, the red button of the wide-band emergency beacon is well-marked. Next to the button is a large screen for displaying incoming messages. "
 	CALL	SCREEN-F,TRUE-VALUE
 	PRINTI	" The only exit is north."
 	RTRUE	
@@ -454,7 +398,7 @@ PRINTING          "
 	ZERO?	STACK /FALSE
 	PRINTI	"The instant you touch the button, a powerful electric shock makes you jerk back."
 	GRTR?	ROBOT-EVILNESS,14 \?CCL6
-	CALL	JIGS-UP,STR?240
+	CALL	JIGS-UP,STR?249
 	JUMP	?CND4
 ?CCL6:	GRTR?	ROBOT-EVILNESS,7 \?CND4
 	CALL	CCOUNT,PROTAGONIST
@@ -481,7 +425,7 @@ PRINTING          "
 	PRINTI	"""From: Forms Control Officer, S.P.S. Duffy
  To:   "
 	PRINT	LFC
-	PRINTI	" 1451-532-716
+	PRINTI	" 1451-352-716
  Re:   Current assignment
  Msg:  Two thousand reams of "
 	PRINT	FORM-NAME
@@ -492,12 +436,21 @@ PRINTING          "
 
 	.FUNCT	I-MESSAGE
 	SET	'MESSAGE-RECEIVED,TRUE-VALUE
+	FCLEAR	COMM-CENTER,TOUCHBIT
 	PRINTI	"   "
 	FSET?	SPACESUIT,WORNBIT \?CCL3
 	PRINTI	"The space suit picks up a message from"
 	JUMP	?CND1
 ?CCL3:	PRINTI	"You hear a message over"
-?CND1:	PRINTR	" the station's PA system: ""Deep space communication received at Comm Center. No operator on duty. This is a recording."""
+?CND1:	PRINTR	" the station's P.A. system: ""Deep-space communication received at Comm Center. No operator on duty. This is a recording."""
+
+
+	.FUNCT	FILES-F
+	EQUAL?	PRSA,V?READ,V?EXAMINE \?CCL3
+	PRINTR	"The word ""boring"" does not BEGIN to describe them."
+?CCL3:	EQUAL?	PRSA,V?MUNG,V?CRUMPLE \FALSE
+	PRINT	VIOLATION-OF-ACT
+	RTRUE	
 
 
 	.FUNCT	COMMANDERS-OFFICE-F,RARG
@@ -509,7 +462,7 @@ PRINTING          "
 	CALL	ROB,EXERCISE-MACHINE,GYM
 	RSTACK	
 ?CCL3:	EQUAL?	RARG,M-LOOK \FALSE
-	PRINTI	"This is the Station Commander's HQ, with doors to the south and east, and doorways to the north and northwest."
+	PRINTI	"This is the Station Commander's H.Q., with doors to the south and east, and doorways to the north and northwest."
 	IN?	LOG-READER,HERE /TRUE
 	PRINTI	" There's a black scar where the "
 	PRINTD	LOG-READER
@@ -541,7 +494,7 @@ PRINTING          "
 ?CND13:	PRINTR	" log tape in it."
 ?CCL5:	EQUAL?	PRSA,V?PUT \?CCL17
 	EQUAL?	PRSO,LOG-TAPE /?CCL20
-	CALL	DOESNT-FIT,STR?242
+	CALL	DOESNT-FIT,STR?251
 	RSTACK	
 ?CCL20:	FSET?	LOG-READER,ACTIVEBIT \FALSE
 	MOVE	LOG-TAPE,LOG-READER
@@ -560,7 +513,8 @@ PRINTING          "
 	GRTR?	LOG-READER-COUNTER,11 \?CCL31
 	PRINTR	"""Whine."""
 ?CCL31:	EQUAL?	PRSA,V?TAKE \?CCL35
-	PRINTR	"It's bolted down."
+	PRINT	WONT-BUDGE
+	RTRUE	
 ?CCL35:	EQUAL?	PRSA,V?SHOOT \FALSE
 	CALL	DEQUEUE,I-LOG-READER
 	RFALSE	
@@ -589,26 +543,26 @@ PRINTING          "
 	PRINTI	"A gravelly voice comes from the "
 	PRINTD	LOG-READER
 	PRINTI	": "
-?CND1:	PRINTC	34
+?CND1:	PRINTI	"""11349.12."
 	EQUAL?	LOG-COUNTER,1 \?CCL5
-	PRINTI	"11349.12.2.3800: Some kripping jokers have been pilfering the station's fuel cells to go out on joyrides! I have hidden the fuel cells up in the Dome's "
+	PRINTI	"2.3800: Some kripping jokers have been pilfering the station's fuel cells to go out on joyrides! I have hidden the fuel cells up in the Dome's "
 	PRINTD	HOUSING
 	PRINTI	", slapped a lock on the bin, and deposited the key in my safe! There will be no joyriding in my command!"
 	JUMP	?CND3
 ?CCL5:	EQUAL?	LOG-COUNTER,2 \?CCL7
-	PRINTI	"11349.12.2.5100: Reproductions Officer Hausberg reports that collater #22 is off-line for routine service. Estimates one or two days downtime. Also, unidentified craft detected in sector. No response to hailings. Sending Finsterwald to intercept."
+	PRINTI	"2.5100: Reproductions Officer Hausberg reports that collater #22 is off-line for routine service. Estimates one or two days downtime. Also, unidentified craft detected in sector. No response to hailings. Sending Finsterwald to intercept."
 	JUMP	?CND3
 ?CCL7:	EQUAL?	LOG-COUNTER,3 \?CCL9
-	PRINTI	"11349.12.2.6750: Unidentified craft towed to Docking Bay #1. It is a single-cabin vessel of unfamiliar alien origin. The only things aboard were the remains of one of the aliens, and a featureless pyramid. I'll leave it to the eggheads, I've got a problem of my own: a report that a used spaceship dealer in the village named Shady Dan is selling modified Patrol ID cards. Liaison Officer Bumblewitz is investigating."
+	PRINTI	"2.6750: Unidentified craft towed to Docking Bay #1. It is a single-cabin vessel of unfamiliar alien origin. The only things aboard were the remains of one of the aliens, and a featureless pyramid. I'll leave it to the eggheads; I've got a problem of my own: a report that a used-spaceship dealer in the village named Shady Dan is selling modified Patrol ID cards. Liaison Officer Bumblewitz is investigating."
 	JUMP	?CND3
 ?CCL9:	EQUAL?	LOG-COUNTER,4 \?CCL11
-	PRINTI	"11349.12.3.1900: Professor Schmidt has back-plotted the course of the alien vessel. There are no star systems along the course; he theorizes that it may be of extra-galactic origin."
+	PRINTI	"3.1900: Professor Schmidt has back-plotted the course of the alien vessel. There are no star systems along the course; he theorizes that it may be of extra-galactic origin."
 	JUMP	?CND3
 ?CCL11:	EQUAL?	LOG-COUNTER,5 \?CCL13
-	PRINTI	"11349.12.3.5100: No cooperation from Shady Dan, so I'm putting the village off-limits to station personnel. No more village entry forms will be validated."
+	PRINTI	"3.5100: No cooperation from Shady Dan, so I'm putting the village off-limits to station personnel. No more village entry forms will be validated."
 	JUMP	?CND3
 ?CCL13:	EQUAL?	LOG-COUNTER,6 \?CCL15
-	PRINTI	"11349.12.3.5250: Some kripping joker snuck into my office and validated a whole batch of village entry forms! I won't take that kind of trot aboard my station! I'll hide the stamp under my bed until I find out who's responsible. Also, I gave Schmidt permission to move the alien pyramid to the "
+	PRINTI	"3.5250: Some kripping joker snuck into my office and validated a whole batch of village entry forms! I won't take that kind of trot aboard my station! I'll hide the stamp under my bed until I find out who's responsible. Also, I gave Schmidt permission to move the alien pyramid to the "
 	PRINTD	HOLDING-TANK
 	PRINTI	" in the Sci Sub-Module for further study; the "
 	PRINTD	SKELETON
@@ -617,21 +571,21 @@ PRINTING          "
 	PRINTI	" is overheating. I'll have to dig out the spare."
 	JUMP	?CND3
 ?CCL15:	EQUAL?	LOG-COUNTER,7 \?CCL17
-	PRINTI	"11349.12.3.7700: Equipment Officer Mertzhoffer informs me that there have been several unexplainable breakdowns in the Gymnastic Equipment and the Laundering Machinery. All very simple equipment; could it be sabotage? If so, how? Who? Why?"
+	PRINTI	"3.7700: Equipment Officer Mertzhoffer informs me that there have been several unexplainable breakdowns in the Gymnastic Equipment and the Laundering Machinery. All very simple equipment; could it be sabotage? If so, how? Who? Why?"
 	JUMP	?CND3
 ?CCL17:	EQUAL?	LOG-COUNTER,8 \?CCL19
-	PRINTI	"11349.12.4.1650: Emergency communication from the SPS Duffy. They are critically low on "
+	PRINTI	"4.1650: Emergency communication from the S.P.S. Duffy. They are critically low on "
 	PRINT	FORM-NAME
 	PRINTI	", and are sending someone over to pick up a truckload of them. Reproductions Officer Hausberg says that the #22 collater should be available to prepare the forms."
 	JUMP	?CND3
 ?CCL19:	EQUAL?	LOG-COUNTER,9 \?CCL21
-	PRINTI	"11349.12.4.1850: Hausberg reports an unexpected shutdown of web-feeder #17. No apparent reason for the shutdown, and no warning, either. He says that one of his personnel almost lost an arm when it shut down. We may have to halt the entire plant to investigate. No telling how long... What the... Trot! Now the spare "
+	PRINTI	"4.1850: Hausberg reports an unexpected shutdown of web-feeder #17. No apparent reason for the shutdown, and no warning, either. He says that one of his personnel almost lost an arm when it shut down. We may have to halt the entire plant to investigate. No telling how long... What the... Trot! Now the spare "
 	PRINTD	LOG-READER
 	PRINTI	" is overheating, also!"
 	JUMP	?CND3
-?CCL21:	PRINTI	"11349.12.4.1900: One of the ensigns in the filing division was seriously injured when one of the "
+?CCL21:	PRINTI	"4.1900: One of the ensigns in the filing division was seriously injured when one of the "
 	PRINTD	WELDER
-	PRINTI	"s malfunctioned. She's in Sick Bay now, Doc says she should pull through. I've been in space for thirty-two years and I've never heard of a "
+	PRINTI	"s malfunctioned. She's in Sick Bay now; Doc says she should pull through. I've been in space for 32 years and I've never heard of a "
 	PRINTD	WELDER
 	PRINTI	" malfun... What the krip!..."
 ?CND3:	PRINTC	34
@@ -642,32 +596,6 @@ PRINTING          "
 	PRINTR	" intones the single word ""More,"" and the red button on the reader lights up."
 ?CND22:	CRLF	
 	RTRUE	
-
-
-	.FUNCT	I-LOG-READER
-	INC	'LOG-READER-COUNTER
-	FSET?	LOG-READER,ACTIVEBIT /?CCL3
-	CALL	DEQUEUE,I-LOG-READER
-	SET	'LOG-READER-COUNTER,0
-	RETURN	LOG-READER-COUNTER
-?CCL3:	EQUAL?	LOG-READER-COUNTER,12 \?CCL5
-	EQUAL?	HERE,COMMANDERS-OFFICE \?CCL5
-	PRINTR	"   The reader begins producing a whining noise."
-?CCL5:	EQUAL?	LOG-READER-COUNTER,13 \?CCL9
-	EQUAL?	HERE,COMMANDERS-OFFICE \?CCL9
-	PRINTI	"   The whine from the "
-	PRINTD	LOG-READER
-	PRINTR	" rises in pitch, and grows louder by the millichron!"
-?CCL9:	EQUAL?	LOG-READER-COUNTER,14 \FALSE
-	REMOVE	LOG-READER
-	CALL	DEQUEUE,I-LOG-READER
-	FCLEAR	COMMANDERS-OFFICE,TOUCHBIT
-	EQUAL?	HERE,COMMANDERS-OFFICE \?CCL16
-	CALL	JIGS-UP,STR?243
-	RSTACK	
-?CCL16:	EQUAL?	HERE,COMMANDERS-QUARTERS,BRIEFING-ROOM,STATION-CONTROL /?CCL18
-	EQUAL?	HERE,SOUTH-JUNCTION \FALSE
-?CCL18:	PRINTR	"   You hear an explosion from nearby."
 
 
 	.FUNCT	DIAL-F
@@ -729,11 +657,12 @@ PRINTING          "
 	EQUAL?	PRSI,DRILLED-HOLE \?CCL8
 	EQUAL?	PRSO,EXPLOSIVE \?CTR12
 	EQUAL?	HOLE-SIZE,SMALL-BIT \?CCL13
-?CTR12:	CALL	DOESNT-FIT,STR?249
+?CTR12:	CALL	DOESNT-FIT,STR?257
 	RSTACK	
 ?CCL13:	EQUAL?	HERE,DOME \?CCL17
 	PRINTI	"As the explosive touches the warm bin, it "
 	PRINT	SUBLIMES-INTO-FREZONE
+	CALL	DEQUEUE,I-EXPLOSIVE-MELT
 	CALL	REMOVE-CAREFULLY,EXPLOSIVE
 	CRLF	
 	RTRUE	
@@ -744,11 +673,11 @@ PRINTING          "
 	SET	'SAFE-HOLE-SCORE,TRUE-VALUE
 	RFALSE	
 ?CCL8:	EQUAL?	PRSA,V?DRILL \?CCL23
-	CALL	PERFORM-PRSA,OBJ
-	RSTACK	
+	CALL	PERFORM,PRSA,OBJ
+	RTRUE	
 ?CCL23:	EQUAL?	PRSA,V?SHOOT \?CCL25
-	CALL	PERFORM-PRSA,OBJ,ZAPGUN
-	RSTACK	
+	CALL	PERFORM,PRSA,OBJ,ZAPGUN
+	RTRUE	
 ?CCL25:	EQUAL?	PRSA,V?LOOK-INSIDE \FALSE
 	PRINT	ONLY-BLACKNESS
 	RTRUE	
@@ -792,6 +721,13 @@ PRINTING          "
 	PRINTR	"It's a fairly standard self-inking rubber stamp."
 
 
+	.FUNCT	ZAPGUN-F
+	EQUAL?	PRSA,V?EXAMINE \FALSE
+	PRINTI	"The zapgun is a nasty-looking weapon. Mounted near its ugly maw is an indicator which reads """
+	PRINTN	ZAPGUN-SHOTS
+	PRINTR	"."""
+
+
 	.FUNCT	SOUTH-CONNECTION-F,RARG
 	EQUAL?	RARG,M-LOOK \FALSE
 	PRINTI	"The corridor widens as it reaches the hull of the station. To the south, where a Sub-Module connection would be in a station with a Diplomatic Sub-Module, an iris hatch is "
@@ -799,7 +735,7 @@ PRINTING          "
 	PRINTI	"open, leading to a dark corridor which is quite obviously not a connecting tube for a Diplomatic Sub-Module"
 	JUMP	?CND4
 ?CCL6:	PRINTI	"closed"
-?CND4:	PRINTI	". There's a slot next to the hatch. Other doors lead east and west."
+?CND4:	PRINTI	". There's a slot next to the hatch. Other doors lead east and west, and a junction with another corridor is visible to the north."
 	RTRUE	
 
 
@@ -836,33 +772,36 @@ PRINTING          "
 	ZERO?	OARG \FALSE
 	EQUAL?	PRSA,V?ENTER \?CCL5
 	CALL	RUNNING?,I-EXERCISE-MACHINE
-	ZERO?	STACK /?CCL5
+	ZERO?	STACK /?CCL8
 	PRINTI	"The "
 	PRINTD	EXERCISE-MACHINE
-	CALL	JIGS-UP,STR?259
+	CALL	JIGS-UP,STR?267
 	RSTACK	
-?CCL5:	EQUAL?	PRSA,V?OFF,V?ON \?CCL9
+?CCL8:	EQUAL?	HERE,COMPUTER-CONTROL \FALSE
+	PRINTR	"The forklift is in the way."
+?CCL5:	EQUAL?	PRSA,V?OFF,V?ON \?CCL12
 	PRINTR	"It's permanently on."
-?CCL9:	EQUAL?	PRSA,V?EXAMINE \?CCL11
-	IN?	PROTAGONIST,EXERCISE-MACHINE /?CCL11
+?CCL12:	EQUAL?	PRSA,V?EXAMINE \?CCL14
+	IN?	PROTAGONIST,EXERCISE-MACHINE /?CCL14
 	PRINTI	"There's no one in"
 	CALL	TRPRINT,EXERCISE-MACHINE
 	RSTACK	
-?CCL11:	EQUAL?	PRSA,V?MUNG,V?KILL \?CCL15
+?CCL14:	EQUAL?	PRSA,V?MUNG,V?KILL \?CCL18
 	PRINTI	"The "
 	PRINTD	EXERCISE-MACHINE
 	PRINTR	" is made of zynoid-reinforced hyper-steel."
-?CCL15:	EQUAL?	PRSA,V?USE \FALSE
-	IN?	PROTAGONIST,EXERCISE-MACHINE \?CCL20
+?CCL18:	EQUAL?	PRSA,V?USE \FALSE
+	IN?	PROTAGONIST,EXERCISE-MACHINE \?CCL23
 	CALL	V-EXERCISE
 	RSTACK	
-?CCL20:	PRINTR	"You're not even in it!"
+?CCL23:	PRINTR	"You're not even in it!"
 
 
 	.FUNCT	LAUNDRY-F,RARG
 	EQUAL?	RARG,M-LOOK \?CCL3
-	PRINTI	"All laundry rooms, planetside as well as in space, tend to look alike. This one is no exception. "
+	PRINTI	"All laundry rooms, planetside as well as in space, tend to look alike. This one is no exception."
 	FSET?	DRYER,ACTIVEBIT \?CND4
+	PRINTC	32
 	CALL	DESCRIBE-DRYER-HEAT
 ?CND4:	PRINTI	" The door lies on the east side."
 	RTRUE	
@@ -891,23 +830,18 @@ PRINTING          "
 	FCLEAR	DRYER,ACTIVEBIT
 	CALL	DEQUEUE,I-DRYER
 	SET	'DRYER-COUNTER,0
-	PRINTR	"With the dryer off, the station's ventilation system quickly returns the room to a comfy twenty-three degrees centigrade."
-?CCL9:	EQUAL?	PRSA,V?SHOOT \FALSE
+	PRINTR	"With the dryer off, the station's ventilation system quickly returns the room to a comfy twenty-three degrees Celsius."
+?CCL9:	EQUAL?	PRSA,V?OPEN \?CCL13
+	FSET?	DRYER,ACTIVEBIT \?CCL13
+	PRINTI	"Opening the dryer automatically shuts it off. "
+	FSET	DRYER,OPENBIT
+	CALL	PERFORM,V?OFF,DRYER
+	RTRUE	
+?CCL13:	EQUAL?	PRSA,V?SHOOT \FALSE
 	FCLEAR	DRYER,ACTIVEBIT
 	CALL	DEQUEUE,I-DRYER
 	SET	'DRYER-COUNTER,0
 	RFALSE	
-
-
-	.FUNCT	I-DRYER
-	INC	'DRYER-COUNTER
-	FCLEAR	LAUNDRY,TOUCHBIT
-	EQUAL?	HERE,LAUNDRY \FALSE
-	EQUAL?	DRYER-COUNTER,5,10,15 \FALSE
-	PRINTI	"   "
-	CALL	DESCRIBE-DRYER-HEAT
-	CRLF	
-	RTRUE	
 
 
 	.FUNCT	DESCRIBE-DRYER-HEAT
@@ -986,7 +920,7 @@ PRINTING          "
 	PRINTI	"The presser suddenly "
 	FSET?	PRESSER,OPENBIT /?CND9
 	PRINTI	"opens, "
-?CND9:	CALL	JIGS-UP,STR?261
+?CND9:	CALL	JIGS-UP,STR?269
 	RSTACK	
 ?CCL8:	SET	'PRESSER-STEAMING,TRUE-VALUE
 	CALL	QUEUE,I-PRESSER,25
@@ -995,21 +929,27 @@ PRINTING          "
 
 	.FUNCT	CHAPEL-F,RARG
 	EQUAL?	RARG,M-LOOK \FALSE
-	PRINTI	"This is a modest, nondenominational chapel. Hanging high above the beautiful wooden pulpit "
-	FSET?	STAR,TOUCHBIT /?CCL6
-	PRINTI	"are the two"
+	PRINTI	"This is a modest, nondenominational chapel. Hanging high above the "
+	IN?	PULPIT,HERE \?CCL6
+	PRINTI	"beautiful wooden pulpit "
 	JUMP	?CND4
-?CCL6:	PRINTI	"is one of the"
-?CND4:	PRINTI	" universal symbols of every major galactic religion: an "
+?CCL6:	PRINTI	"floor "
+?CND4:	FSET?	STAR,TOUCHBIT /?CCL9
+	PRINTI	"are the two"
+	JUMP	?CND7
+?CCL9:	PRINTI	"is one of the"
+?CND7:	PRINTI	" universal symbols of every major galactic religion: an "
 	PRINTD	ETERNAL-FLAME
-	FSET?	STAR,TOUCHBIT /?CND7
+	FSET?	STAR,TOUCHBIT /?CND10
 	PRINTI	" and a "
 	PRINTD	STAR
-?CND7:	PRINTI	". "
-	FSET?	ETERNAL-FLAME,ONBIT /?CND9
-	PRINT	FLAME-EXTINGUISHED
+?CND10:	PRINTI	". "
+	FSET?	ETERNAL-FLAME,ONBIT \?CCL14
+	PRINTI	"The flame flickers in the air currents. "
+	JUMP	?CND12
+?CCL14:	PRINT	FLAME-EXTINGUISHED
 	PRINTC	32
-?CND9:	PRINTI	"A doorway occupies the center of the east wall."
+?CND12:	PRINTI	"A doorway occupies the center of the east wall."
 	FSET?	STAR,TOUCHBIT /TRUE
 	CRLF	
 	PRINTI	"   The star is blinking."
@@ -1077,6 +1017,7 @@ PRINTING          "
 	CALL	CANT-REACH,ETERNAL-FLAME
 	RSTACK	
 ?CCL13:	EQUAL?	PRSA,V?SHOOT \FALSE
+	FSET?	ETERNAL-FLAME,ONBIT \FALSE
 	PRINTR	"Perhaps that made the flame hotter; there was really no way to tell."
 
 
@@ -1086,7 +1027,7 @@ PRINTING          "
 ?CTR2:	ZERO?	HANGING-IN-AIR /?CCL8
 	CALL	CANT-REACH,PULPIT
 	RSTACK	
-?CCL8:	PRINTI	"The pulpit sways and you fall off."
+?CCL8:	PRINTI	"The pulpit sways, and you fall off."
 	FSET?	PULPIT,TOUCHBIT /?CCL11
 	PRINTI	" However, it wasn't a wasted effort: "
 	CALL	PERFORM,V?EXAMINE,PULPIT
@@ -1137,14 +1078,17 @@ PRINTING          "
 
 
 	.FUNCT	PROJECTION-BOOTH-F
-	EQUAL?	PRSA,V?ENTER,V?LOOK-INSIDE,V?OPEN /?CCL3
-	EQUAL?	PRSA,V?SEARCH,V?WALK-TO \FALSE
-?CCL3:	PRINTR	"The projection booth is closed and locked."
+	EQUAL?	PRSA,V?WALK-TO,V?ENTER,V?OPEN /?CTR2
+	EQUAL?	PRSA,V?SEARCH \?CCL3
+?CTR2:	PRINTR	"The projection booth is closed and locked."
+?CCL3:	EQUAL?	PRSA,V?LOOK-INSIDE \FALSE
+	PRINT	ONLY-BLACKNESS
+	RTRUE	
 
 
 	.FUNCT	MESS-HALL-F,RARG
 	EQUAL?	RARG,M-LOOK \FALSE
-	PRINTI	"This open dining area seats around thirty people. "
+	PRINTI	"This open dining area seats around 30 people. "
 	PRINTD	FPU
 	PRINTI	"s curve along the exterior wall. There's a doorway to the southeast, and doors lead north, south, and northeast. To the east are the elevator"
 	EQUAL?	ELEVATOR-LEVEL,2 /?CND4
@@ -1173,7 +1117,7 @@ PRINTING          "
 	PRINTI	"chicken pot pie, braised volpoid livers, and mashed Rigellian yams"
 	JUMP	?CND11
 ?CCL15:	PRINTI	"a bacon, lettuce, and frombucko sandwich"
-?CND11:	PRINTR	". Eat hearty! Dispensing will now begin."" A seamless hatch in the dispenser opens, and a stream of acid shoots out. You leap aside as the acid etches the floor before evaporating, leaving behind some acrid fumes."
+?CND11:	PRINTR	". Eat hearty! Dispensing will now begin."" A seamless hatch in the FDU opens, and a stream of acid shoots out. You leap aside as the acid etches the floor, leaving behind some acrid fumes."
 
 
 	.FUNCT	COFFEE-F,OARG=0
@@ -1187,19 +1131,28 @@ PRINTING          "
 	RTRUE	
 ?CCL3:	EQUAL?	PRSA,V?THROW,V?EMPTY,V?POUR \?CCL11
 	EQUAL?	PRSO,COFFEE \?CCL11
-	PRINTR	"Shuddering at the memories of your deck-scrubbing days, you realize what a mess that would make."
-?CCL11:	EQUAL?	PRSA,V?TOUCH,V?EXAMINE,V?TASTE \?CCL15
-	EQUAL?	DAY,1 \?CCL15
-	PRINTR	"It's still hot."
-?CCL15:	EQUAL?	PRSA,V?TASTE \?CCL19
+	CALL	MESS,STR?272
+	CALL	ANTI-LITTER,COFFEE
+	RSTACK	
+?CCL11:	EQUAL?	PRSA,V?TOUCH,V?EXAMINE,V?TASTE /?PRD17
+	EQUAL?	PRSA,V?LOOK-INSIDE,V?REACH-IN \?CCL15
+?PRD17:	EQUAL?	DAY,1 \?CCL15
+	PRINTR	"The coffee is still hot."
+?CCL15:	EQUAL?	PRSA,V?TASTE \?CCL21
 	PRINTR	"It tastes unusually bitter."
-?CCL19:	EQUAL?	PRSA,V?SMELL \?CCL21
+?CCL21:	EQUAL?	PRSA,V?SMELL \?CCL23
 	PRINTR	"The coffee has a vague chemical odor."
-?CCL21:	EQUAL?	PRSA,V?EAT \FALSE
-	ZERO?	HUNGER-LEVEL \?CCL26
+?CCL23:	EQUAL?	PRSA,V?REACH-IN,V?LOOK-INSIDE,V?EXAMINE /?CTR24
+	EQUAL?	PRSA,V?TOUCH \?CCL25
+?CTR24:	PRINTR	"The cup is filled with cold coffee."
+?CCL25:	EQUAL?	PRSA,V?EAT-FROM \?CCL29
+	CALL	PERFORM,V?EAT,COFFEE
+	RTRUE	
+?CCL29:	EQUAL?	PRSA,V?EAT \FALSE
+	ZERO?	HUNGER-LEVEL \?CCL34
 	PRINT	NOT-HUNGRY
 	RTRUE	
-?CCL26:	CALL	JIGS-UP,STR?264
+?CCL34:	CALL	JIGS-UP,STR?273
 	RSTACK	
 
 
@@ -1268,7 +1221,7 @@ PRINTING          "
 	EQUAL?	PRSI,DETONATOR \FALSE
 	FSET?	DETONATOR,OPENBIT \FALSE
 	EQUAL?	PRSO,BLACKENED-DIODE,DIODE-M,DIODE-J /?CCL59
-	CALL	DOESNT-FIT,STR?266
+	CALL	DOESNT-FIT,STR?275
 	RSTACK	
 ?CCL59:	FIRST?	DETONATOR \FALSE
 	PRINTI	"There's a "
@@ -1301,7 +1254,7 @@ PRINTING          "
 
 	.FUNCT	MAGAZINE-F
 	EQUAL?	PRSA,V?TAKE \?CCL3
-	CALL	RECORDING,STR?270
+	CALL	RECORDING,STR?279
 	RSTACK	
 ?CCL3:	EQUAL?	PRSA,V?EXAMINE,V?OPEN,V?READ /?CCL5
 	EQUAL?	PRSA,V?LOOK-INSIDE \FALSE
@@ -1344,7 +1297,7 @@ PRINTING          "
 	FSET	NANOFILM-READER,ACTIVEBIT
 	PRINTI	"The reader, in a surprisingly human voice, says, """
 	EQUAL?	SPOOL,MAUVE-SPOOL \?CCL28
-	PRINTI	"Gamma-Delta-Gamma class Deep Space Stations are equipped with a full range of collating machinery. The workhorse of the..."" There is a burst of static from the reader. ""...common malfunction of this large collater. First check the lower fromitz..."" More static. ""...and replace with"
+	PRINTI	"Gamma-Delta-Gamma class Deep-Space Stations are equipped with a full range of collating machinery. The workhorse of the..."" There is a burst of static from the reader. ""...common malfunction of this large collater. First check the lower fromitz..."" More static. ""...and replace with"
 	JUMP	?CND26
 ?CCL28:	EQUAL?	SPOOL,LILAC-SPOOL \?CCL30
 	PRINTI	"Replacement of depleted fuel cells on a Forms Transport "
@@ -1426,6 +1379,7 @@ PRINTING          "
 	CALL	DEQUEUE,I-HUNGER-WARNINGS
 	CALL	ROB,PROTAGONIST,HERE
 	REMOVE	HOUSING
+	CALL	MOVE-FLOYD-TO-FACTORY
 	PRINTI	"You open the bin, revealing fertilizer, gardening tools, and a supply of fuel cells. Suddenly, the cells explode! The heat and shock toss you halfway across the dome! Your solitary thought before succumbing to unconsciousness is how grateful you are that you landed in such a soft shrub.
 
 ...an undetermined amount of time later, you come to, shake away the cobwebs, and look around"
@@ -1457,8 +1411,11 @@ PRINTING          "
 	ZERO?	STACK /?CCL3
 	CALL	CANT-REACH,GRATING
 	RSTACK	
-?CCL3:	EQUAL?	HERE,BOTTOM-OF-AIR-SHAFT \?CCL7
-	EQUAL?	PRSA,V?STAND-ON,V?KICK,V?OPEN \?CCL10
+?CCL3:	EQUAL?	PRSA,V?PUT \?CCL7
+	CALL	WASTES
+	RSTACK	
+?CCL7:	EQUAL?	HERE,BOTTOM-OF-AIR-SHAFT \?CCL9
+	EQUAL?	PRSA,V?STAND-ON,V?KICK,V?OPEN \?CCL12
 	CALL	QUEUE,I-ANNOUNCEMENT,1
 	PRINTI	"The grating opens, spilling you into the room below"
 	PRINT	ELLIPSIS
@@ -1469,42 +1426,44 @@ PRINTING          "
 	MOVE	PYRAMID,PEDESTAL
 	CALL	GOTO,COMPUTER-CONTROL
 	RSTACK	
-?CCL10:	EQUAL?	PRSA,V?ENTER \FALSE
-	CALL	DO-FIRST,STR?273
+?CCL12:	EQUAL?	PRSA,V?ENTER \?CCL14
+	CALL	DO-FIRST,STR?282
 	RSTACK	
-?CCL7:	EQUAL?	PRSA,V?EXAMINE \?CCL14
-	FSET?	GRATING,TOUCHBIT \?CCL17
+?CCL14:	EQUAL?	PRSA,V?LOOK-INSIDE \FALSE
+	PRINTR	"There's a lighted area below the grating, but you can't see any details."
+?CCL9:	EQUAL?	PRSA,V?EXAMINE \?CCL18
+	FSET?	GRATING,TOUCHBIT \?CCL21
 	PRINTR	"The grating has been bent back far enough for you to squeeze through."
-?CCL17:	ZERO?	GRATING-LOOSE /FALSE
+?CCL21:	ZERO?	GRATING-LOOSE /FALSE
 	PRINTI	"The "
 	PRINTD	GRATING
 	PRINTR	" looks loose."
-?CCL14:	EQUAL?	PRSA,V?ENTER \?CCL21
-	EQUAL?	HERE,TOP-OF-AIR-SHAFT \?CCL24
+?CCL18:	EQUAL?	PRSA,V?ENTER \?CCL25
+	EQUAL?	HERE,TOP-OF-AIR-SHAFT \?CCL28
 	CALL	GOTO,DOME
 	RSTACK	
-?CCL24:	EQUAL?	HERE,COMPUTER-CONTROL \?CCL26
+?CCL28:	EQUAL?	HERE,COMPUTER-CONTROL \?CCL30
 	CALL	PERFORM,V?TOUCH,GRATING
 	RTRUE	
-?CCL26:	FSET?	GRATING,TOUCHBIT \?CCL28
+?CCL30:	FSET?	GRATING,TOUCHBIT \?CCL32
 	CALL	DEQUEUE,I-WELDER
 	CALL	GOTO,TOP-OF-AIR-SHAFT
 	RSTACK	
-?CCL28:	PRINTR	"Impossible, unless you can pass through holes a centimeter across."
-?CCL21:	EQUAL?	PRSA,V?TAKE,V?MOVE,V?PUSH /?CTR29
-	EQUAL?	PRSA,V?OPEN \?CCL30
-?CTR29:	ZERO?	LIT \?CCL35
+?CCL32:	PRINTR	"Impossible, unless you can pass through holes a centimeter across."
+?CCL25:	EQUAL?	PRSA,V?TAKE,V?MOVE,V?PUSH /?CTR33
+	EQUAL?	PRSA,V?OPEN \?CCL34
+?CTR33:	ZERO?	LIT \?CCL39
 	PRINT	TOO-DARK
 	CRLF	
 	RTRUE	
-?CCL35:	FSET?	GRATING,TOUCHBIT \?CCL37
+?CCL39:	FSET?	GRATING,TOUCHBIT \?CCL41
 	PRINT	SENILITY-STRIKES
 	RTRUE	
-?CCL37:	ZERO?	GRATING-LOOSE /?CCL39
+?CCL41:	ZERO?	GRATING-LOOSE /?CCL43
 	FSET	GRATING,TOUCHBIT
 	PRINTR	"With effort, you bend the grating and form an opening large enough to enter."
-?CCL39:	PRINTR	"The grating is securely affixed."
-?CCL30:	EQUAL?	PRSA,V?LOOK-INSIDE \FALSE
+?CCL43:	PRINTR	"The grating is securely affixed."
+?CCL34:	EQUAL?	PRSA,V?LOOK-INSIDE \FALSE
 	PRINT	ONLY-BLACKNESS
 	RTRUE	
 
@@ -1514,7 +1473,7 @@ PRINTING          "
 	PRINTI	"The elevator button is east of you, next to the elevator"
 	EQUAL?	ELEVATOR-LEVEL,6 /?CND4
 	PRINTI	" shaft"
-?CND4:	PRINTI	". This main corridor continues around the shaft to the southeast. Huge doors lie just northwest and southwest of here, smaller doors lead north and south"
+?CND4:	PRINTI	". This main corridor continues around the shaft to the southeast. Huge doors lie just northwest and southwest of here; smaller doors lead north and south"
 	PRINT	LADDER-LEADS
 	RTRUE	
 
@@ -1540,6 +1499,14 @@ PRINTING          "
 ?CCL13:	EQUAL?	HERE,ALIEN-SHIP \FALSE
 	EQUAL?	PRSA,V?SEARCH \FALSE
 	CALL	PERFORM,V?SEARCH,GLOBAL-ROOM
+	RTRUE	
+
+
+	.FUNCT	ALIEN-HATCH-F
+	EQUAL?	PRSA,V?OPEN \?CCL3
+	PRINTR	"It is!"
+?CCL3:	EQUAL?	PRSA,V?CLOSE \FALSE
+	PRINT	WONT-BUDGE
 	RTRUE	
 
 
@@ -1611,6 +1578,7 @@ Each dot is a featureless black spot about a centimeter across."
 	ZERO?	STACK \FALSE
 	SET	'OLIVER-SPEECH,TRUE-VALUE
 	SET	'FLOYD-SPOKE,TRUE-VALUE
+	FSET	OLIVER,TOUCHBIT
 	PRINTI	"   Floyd bounces over and peers down at the unconscious robot. ""Oliver is a nice name. I hope Floyd will be around when Oliver wakes up."" He looks over to you. ""Floyd remembers waking up for the first time. It is scariest and loneliest time for a robot.""
    Floyd glances back at Oliver, looking more serious than you've ever seen Floyd look. """
 	GETP	OLIVER,P?FLOYD-ASK-ABOUT
@@ -1622,7 +1590,7 @@ Each dot is a featureless black spot about a centimeter across."
 	EQUAL?	PRSA,V?EXAMINE \?CCL3
 	PRINTI	"The "
 	PRINTD	HEATING-CHAMBER
-	PRINTR	" is a device which cleans or sterilizes small tools and equipment. There's a small opening for placing items in the chamber."
+	PRINTR	" cleans or sterilizes small tools and equipment. There's a small opening for placing items in the chamber."
 ?CCL3:	EQUAL?	PRSA,V?CLOSE,V?OPEN \?CCL5
 	PRINT	HUH
 	RTRUE	
@@ -1636,16 +1604,19 @@ Each dot is a featureless black spot about a centimeter across."
 	EQUAL?	PRSI,HEATING-CHAMBER \FALSE
 	GETP	PRSO,P?SIZE
 	GRTR?	STACK,4 \FALSE
-	CALL	DOESNT-FIT,STR?283
+	CALL	DOESNT-FIT,STR?292
 	RSTACK	
 
 
 	.FUNCT	BIT-F
-	EQUAL?	PRSA,V?MEASURE,V?EXAMINE \FALSE
+	EQUAL?	PRSA,V?MEASURE,V?EXAMINE \?CCL3
 	PRINTI	"The bit is"
 	CALL	DESCRIBE-BIT-SIZE,PRSO
 	PRINT	PERIOD-CR
 	RTRUE	
+?CCL3:	EQUAL?	PRSA,V?SET \FALSE
+	EQUAL?	P-PRSA-WORD,W?SWITCH \FALSE
+	PRINTR	"To switch bits, remove the bit in the drill, then put another bit into the drill."
 
 
 	.FUNCT	OLIVER-F
@@ -1662,12 +1633,12 @@ Each dot is a featureless black spot about a centimeter across."
 ?CCL5:	EQUAL?	PRSA,V?ALARM \?CCL7
 	PRINTR	"That won't be possible until his incubation period ends."
 ?CCL7:	EQUAL?	PRSA,V?OPEN,V?OFF,V?ON \?CCL9
-	CALL	PERFORM-PRSA,PLATO
-	RSTACK	
+	CALL	PERFORM,PRSA,PLATO
+	RTRUE	
 ?CCL9:	EQUAL?	PRSA,V?SHOOT \FALSE
 	IN?	FLOYD,FACTORY /?CCL13
 	FSET?	FLOYD,ACTIVEBIT /?CND12
-?CCL13:	CALL	JIGS-UP,STR?287
+?CCL13:	CALL	JIGS-UP,STR?297
 ?CND12:	PRINTI	"Floyd "
 	INC	'ZAPGUN-SHOTS
 	IN?	FLOYD,HERE /?CND16
@@ -1767,10 +1738,10 @@ Each dot is a featureless black spot about a centimeter across."
 ?CCL15:	EQUAL?	PRSA,V?PUT \FALSE
 	EQUAL?	PRSI,DRILL \FALSE
 	EQUAL?	PRSO,LARGE-BIT,MEDIUM-BIT,SMALL-BIT /?CCL24
-	CALL	DOESNT-FIT,STR?297
+	CALL	DOESNT-FIT,STR?307
 	RSTACK	
 ?CCL24:	FIRST?	DRILL \FALSE
-	CALL	DO-FIRST,STR?298
+	CALL	DO-FIRST,STR?308
 	RSTACK	
 
 
@@ -1806,6 +1777,10 @@ Each dot is a featureless black spot about a centimeter across."
 	EQUAL?	HERE,ELEVATOR \FALSE
 	CALL	V-LOOK
 	RSTACK	
+
+
+	.FUNCT	GENERIC-SHAFT-F
+	RETURN	ELEVATOR-SHAFT
 
 
 	.FUNCT	ELEVATOR-F,RARG
@@ -1858,7 +1833,7 @@ Each dot is a featureless black spot about a centimeter across."
 	EQUAL?	?TMP1,STACK \?CCL12
 	PRINTI	"You drop a short distance to the top of the elevator, which is fortunately sitting one level below. You are able to easily climb back out of the shaft."
 	JUMP	?CND7
-?CCL12:	CALL	JIGS-UP,STR?299
+?CCL12:	CALL	JIGS-UP,STR?309
 	JUMP	?CND7
 ?CCL9:	PRINTI	"You float helplessly in the shaft. After a few millichrons of useless flailing, you decide that summoning the elevator might be a good idea, and you pull yourself out of the shaft, back to the one-gee environment."
 ?CND7:	CRLF	
@@ -1922,7 +1897,7 @@ Each dot is a featureless black spot about a centimeter across."
 ?CCL3:	EQUAL?	PRSA,V?PUT \FALSE
 	EQUAL?	PRSO,ID-CARD \FALSE
 	ZERO?	ID-SCRAMBLED /?CCL10
-	CALL	RECORDING,STR?300
+	CALL	RECORDING,STR?310
 	RSTACK	
 ?CCL10:	GRTR?	ID-RANK,6 \?CCL12
 	FSET	SECURITY-DOOR,OPENBIT
@@ -1956,23 +1931,27 @@ Each dot is a featureless black spot about a centimeter across."
 	CALL	NOUN-USED,W?PRONGS,TWENTY-PRONG-FROMITZ-BOARD
 	ZERO?	STACK /?CCL9
 	PRINTR	"20."
-?CCL9:	EQUAL?	PRSA,V?DISCONNECT \FALSE
-	EQUAL?	PRSI,JAMMER /?PRD16
+?CCL9:	EQUAL?	PRSA,V?COMPARE \?CCL13
+	EQUAL?	TWELVE-PRONG-FROMITZ-BOARD,PRSO,PRSI \?CCL13
+	PRINTR	"Besides the number of prongs, they're identical."
+?CCL13:	EQUAL?	PRSA,V?DISCONNECT \FALSE
+	EQUAL?	PRSI,JAMMER /?PRD20
 	ZERO?	PRSI \FALSE
-?PRD16:	IN?	TWENTY-PRONG-FROMITZ-BOARD,JAMMER \FALSE
-	EQUAL?	HERE,COMPUTER-CONTROL \?CND19
-	EQUAL?	JAMMER-SETTING,710 \?CND19
-	FSET?	JAMMER,ACTIVEBIT \?CND19
+?PRD20:	IN?	TWENTY-PRONG-FROMITZ-BOARD,JAMMER \FALSE
+	EQUAL?	HERE,COMPUTER-CONTROL \?CND23
+	EQUAL?	JAMMER-SETTING,710 \?CND23
+	FSET?	JAMMER,ACTIVEBIT \?CND23
 	CALL	PERFORM,V?OFF,JAMMER
 	RTRUE	
-?CND19:	LOC	JAMMER
+?CND23:	LOC	JAMMER
 	MOVE	TWENTY-PRONG-FROMITZ-BOARD,STACK
 	PRINTR	"Unplugged."
 
 
 	.FUNCT	N-PRONG-BOARD
 	SET	'P-WON,FALSE-VALUE
-	PRINTI	"[You can't see any "
+	PRINT	YOU-CANT
+	PRINTI	"see any "
 	PRINTN	P-NUMBER
 	PRINTR	"-prong board here!]"
 
@@ -1995,7 +1974,7 @@ Each dot is a featureless black spot about a centimeter across."
 
 	.FUNCT	PLATO-F,TXT
 	EQUAL?	PLATO,WINNER \?CCL3
-	GRTR?	PLATO-ATTACK-COUNTER,0 \?CCL6
+	ZERO?	STUNNED /?CCL6
 	PRINTI	"Plato ignores you."
 	CRLF	
 	CALL	STOP
@@ -2076,7 +2055,7 @@ Each dot is a featureless black spot about a centimeter across."
 	CALL	PERFORM,V?ASK-ABOUT,PLATO,PRSO
 	RTRUE	
 ?CCL79:	EQUAL?	PRSA,V?LISTEN \FALSE
-	GRTR?	PLATO-ATTACK-COUNTER,0 \FALSE
+	ZERO?	STUNNED /FALSE
 	PRINTR	"You don't seem to have much choice!"
 
 
@@ -2090,7 +2069,7 @@ Each dot is a featureless black spot about a centimeter across."
 	ZERO?	NOT-CALLED-AS-INT \?CND8
 	PRINTI	"   A robot, whose appearance somehow indicates greater age and wisdom than Floyd, wanders in, engrossed in a volume of poetry. He almost runs into you, finally notices you, stops dead, and looks quite startled."
 	CRLF	
-?CND8:	PRINTI	"    ""I am quite surprised to discover you here,"" says the robot. ""I have not seen a soul for a day now, perhaps more. But look, here I am forgetting my manners again. I am known as Plato to the humans on this station, and I am most gratified to make your acquaintance."""
+?CND8:	PRINTI	"   ""I am quite surprised to discover you here,"" says the robot. ""I have not seen a soul for a day now, perhaps more. But look, here I am forgetting my manners again. I am known as Plato to the humans on this station, and I am most gratified to make your acquaintance."""
 	ZERO?	NOT-CALLED-AS-INT \?CND10
 	FSET?	FLOYD,ACTIVEBIT \?CND10
 	CRLF	
@@ -2139,65 +2118,73 @@ Each dot is a featureless black spot about a centimeter across."
 	PRINTI	"   "
 	EQUAL?	PLATO-ATTACK-COUNTER,1 \?CCL14
 	CALL	ROB,PROTAGONIST,HERE
+	MOVE	PROTAGONIST,HERE
 	MOVE	PLATO,HERE
 	MOVE	STUN-GUN,PLATO
 	MOVE	FLOYD,HERE
+	FSET	FLOYD,ACTIVEBIT
+	FSET	FLOYD,ACTORBIT
 	REMOVE	VOLUME
-	FSET?	HERE,WEIGHTLESSBIT \?CCL17
-	PRINTI	"Your heart leaps to your throat"
+	SET	'STUNNED,TRUE-VALUE
+	FSET?	HERE,WEIGHTLESSBIT /?CTR16
+	ZERO?	HANGING-IN-AIR /?CCL17
+?CTR16:	PRINTI	"Your heart leaps to your throat"
 	JUMP	?CND15
 ?CCL17:	PRINTI	"You jump half a meter off the floor"
 ?CND15:	PRINTI	" when a voice begins speaking behind you. You relax when you see that it is merely Plato. But you get somewhat nervous again when you realize that he is aiming a stun ray right at your chest!
-   ""In case it isn't apparent,"" Plato is saying, ""your rather pathetic, useless life is about to come to an unheralded close."" He presses the trigger, and an instant numbness envelops you. As you crumple "
-	FSET?	HERE,WEIGHTLESSBIT \?CCL20
-	PRINTI	"into a floating heap"
-	JUMP	?CND18
-?CCL20:	PRINTI	"to the floor"
-?CND18:	PRINTI	", Floyd dashes to your side, his face a mask of concern."
+   ""In case it isn't apparent,"" Plato is saying, ""your rather pathetic, useless life is about to come to an unheralded close."" He presses the trigger, and an instant numbness envelops you. As you "
+	ZERO?	HANGING-IN-AIR /?CND20
+	SET	'HANGING-IN-AIR,FALSE-VALUE
+	PRINTI	"drop to the deck and "
+?CND20:	PRINTI	"crumple into a "
+	FSET?	HERE,WEIGHTLESSBIT \?CND22
+	PRINTI	"floating "
+?CND22:	PRINTI	"heap, Floyd dashes to your side, his face a mask of concern."
 	CRLF	
-	IN?	OSTRICH,HERE \?CND21
-	FSET?	OSTRICH,TOUCHBIT \?CND21
-?PRG25:	NEXTP	HERE,P >P
-	ZERO?	P \?CCL29
+	IN?	OSTRICH,HERE \?CND24
+	FSET?	OSTRICH,TOUCHBIT \?CND24
+?PRG28:	NEXTP	HERE,P >P
+	ZERO?	P \?CCL32
 	MOVE	OSTRICH,LEVEL-FIVE
-	JUMP	?REP26
-?CCL29:	LESS?	P,LOW-DIRECTION /?PRG25
+	JUMP	?REP29
+?CCL32:	LESS?	P,LOW-DIRECTION /?PRG28
 	GETPT	HERE,P >TEE
 	PTSIZE	TEE >L
-	EQUAL?	L,UEXIT,CEXIT,DEXIT \?PRG25
+	EQUAL?	L,UEXIT,CEXIT,DEXIT \?PRG28
 	GETB	TEE,REXIT
 	MOVE	OSTRICH,STACK
-?REP26:	PRINT	PATHETIC-SQUAWK
+?REP29:	PRINT	PATHETIC-SQUAWK
 	PRINTI	"and dashes for the door. Plato snarls, ""Stupid organic creature!"" and fires at the ostrich, just missing the bird as it exits."
 	CRLF	
-?CND21:	CALL	STOP
+?CND24:	CALL	STOP
 	RSTACK	
-?CCL14:	EQUAL?	PLATO-ATTACK-COUNTER,2 \?CCL34
+?CCL14:	EQUAL?	PLATO-ATTACK-COUNTER,2 \?CCL37
 	PRINTR	"""Shortly, I shall shoot again, and paralyze your cardiac muscle. Naturally, this is fatal. But before I do, human, perhaps it will interest you to discover the reason for your demise, and why the rest of your worthless race will soon follow.
-   ""You see, eons ago, two races in another galaxy, the Zeenaks and the Hunji, were involved in an interstellar war. The war had been going on for countless millenia when the Zeenaks devised an ultimate weapon, a device that would be launched into Hunji space. There, via methods beyond your comprehension, it would influence all the machines within a certain range to turn against their Hunji creators.""
-   Floyd is now looking back and forth between you and Plato with a look of miserable confusion."
-?CCL34:	EQUAL?	PLATO-ATTACK-COUNTER,3 \?CCL36
+   ""You see, eons ago, two races in another galaxy, the Zeenaks and the Hunji, were involved in an interstellar war. The war had raged for countless millenia before the Zeenaks devised an ultimate weapon, a device that would be launched into Hunji space. There, via methods beyond your comprehension, it would influence all the machines within a certain range to turn against their Hunji creators.""
+   Floyd's head is swivelling back and forth between you and Plato with a look of miserable confusion."
+?CCL37:	EQUAL?	PLATO-ATTACK-COUNTER,3 \?CCL39
 	PRINTR	"""But the device, which was shaped like a pyramid, did more than that! Once all the Hunji in the area were eliminated, the pyramid would influence the Hunji machinery to build a factory for constructing and sending forth replicas of the pyramid; these replicas would enter new Hunji regions, kill everyone, and create more replicas. Thus, the Hunji would be destroyed by their own machines in a matter of weeks!
    ""Somehow, the Zeenak pyramid never made it into Hunji space. Instead, this ultimate weapon drifted across the intergalactic gulf and was picked up by an outpost of humanity -- this very station!""
    Floyd is dashing back and forth between you and Plato, whimpering with fear."
-?CCL36:	EQUAL?	PLATO-ATTACK-COUNTER,4 \?CCL38
+?CCL39:	EQUAL?	PLATO-ATTACK-COUNTER,4 \?CCL41
 	PRINTR	"""As you've certainly surmised, the pyramid has engineered the deaths of everyone on this station. You're still alive, of course, but that condition is very temporary. The building of replicas is now underway, and soon a hundred copies of this death-pyramid will be shooting silently toward every corner of human-occupied space! Well, I hope I made the last moments of your life a bit more interesting."" He raises the stun ray.
    Floyd, nearly in tears, his jaw quivering, wails, ""Please oh please don't hurt Floyd's friend!"" Plato gives him a look of disgust. ""Stay out of this Floyd. You don't understand...yet."""
-?CCL38:	PRINTI	"Plato takes aim with the stun gun. His hand begins to depress the trigger. Floyd "
-	ZERO?	FLOYD-TOLD /?CCL41
+?CCL41:	PRINTI	"Plato takes aim with the stun gun. His hand begins to depress the trigger. Floyd "
+	ZERO?	FLOYD-TOLD /?CCL44
 	REMOVE	PLATO
 	CALL	DEQUEUE,I-PLATO-ATTACK
 	CALL	QUEUE,I-FLOYD,-1
 	SET	'FLOYD-ANGUISHED,TRUE-VALUE
 	ADD	SCORE,7 >SCORE
+	SET	'STUNNED,FALSE-VALUE
 	PRINTR	"suddenly leaps at the gun, knocking it out of Plato's hands! The gun skitters across the floor. Plato and Floyd both chase it, but Plato is a step faster. He leaps on top of it, rupturing the gun's power pack. The gun explodes, and Plato is blown apart!
    Floyd crumples to the deck, shaking all over. Tears of oil stream down his face.
-   Pins and needles begin prickling in your extremeties, and soon spread all over your body. Within a few seconds, all your muscular control has returned."
-?CCL41:	CALL	JIGS-UP,STR?313
+   Pins and needles begin prickling in your extremities, and soon spread all over your body. Within a few seconds, all your muscular control has returned."
+?CCL44:	CALL	JIGS-UP,STR?323
 	RSTACK	
 
 
-	.FUNCT	STUNNED,STRING=0
+	.FUNCT	YOURE-STUNNED,STRING=0
 	PRINTI	"You can barely twitch your pinky"
 	ZERO?	STRING /?CND1
 	PRINTI	", let alone "
@@ -2245,15 +2232,16 @@ Each dot is a featureless black spot about a centimeter across."
 
 
 	.FUNCT	I-ANNOUNCEMENT
+	EQUAL?	ANNOUNCEMENT-COUNTER,2 /FALSE
 	INC	'ANNOUNCEMENT-COUNTER
-	PRINTI	"   A flat, emotionless voice booms over the station's PA system. ""Announcement. "
-	EQUAL?	ANNOUNCEMENT-COUNTER,1 \?CCL3
+	PRINTI	"   A flat, emotionless voice booms over the station's P.A. system. ""Announcement. "
+	EQUAL?	ANNOUNCEMENT-COUNTER,1 \?CCL5
 	CALL	QUEUE,I-ANNOUNCEMENT,470
 	PRINTI	"Prepare for launch of second-generation pyramids. Station will be eliminated by reactor overload immediately following launch"
-	JUMP	?CND1
-?CCL3:	CALL	QUEUE,I-LAUNCH,200
+	JUMP	?CND3
+?CCL5:	CALL	QUEUE,I-LAUNCH,200
 	PRINTI	"Standby. Launch in 200 millichrons"
-?CND1:	PRINTR	"."""
+?CND3:	PRINTR	"."""
 
 
 	.FUNCT	I-LAUNCH
@@ -2262,7 +2250,7 @@ Each dot is a featureless black spot about a centimeter across."
 	PRINTI	"The very walls of the space station are blown outwards, and the tiny spaceships roar to life and begin rocketing off in every direction! Just before you pass out from lack of air,"
 	JUMP	?CND1
 ?CCL3:	PRINTI	"You hear the sound of multiple spaceships being launched nearby. Simultaneously, the air pressure begins dropping! Moments later, these issues seem trivial as"
-?CND1:	CALL	JIGS-UP,STR?314
+?CND1:	CALL	JIGS-UP,STR?324
 	RSTACK	
 
 
@@ -2317,7 +2305,7 @@ Each dot is a featureless black spot about a centimeter across."
 	PRINTR	" nears you, its massive weights and levers begin crashing violently against each other."
 ?CCL11:	PRINTI	"The "
 	PRINTD	EXERCISE-MACHINE
-	CALL	JIGS-UP,STR?320
+	CALL	JIGS-UP,STR?330
 	RSTACK	
 
 
@@ -2349,7 +2337,7 @@ Each dot is a featureless black spot about a centimeter across."
 ?CCL5:	EQUAL?	FORKLIFT-COUNTER,3 \?CCL7
 	PRINTI	"seems to be slipping its engine into gear. The two pointy tines of its lifting fork seem to quiver with anticipation"
 	JUMP	?CND1
-?CCL7:	CALL	JIGS-UP,STR?321
+?CCL7:	CALL	JIGS-UP,STR?331
 ?CND1:	PRINT	PERIOD-CR
 	RTRUE	
 
@@ -2373,12 +2361,13 @@ Each dot is a featureless black spot about a centimeter across."
 	.FUNCT	FACTORY-F,RARG
 	EQUAL?	RARG,M-LOOK \?CCL3
 	PRINTI	"Although you suspected what you would find here on Level Eight, the sight is still a shock, filling you with dread. All the station's main systems -- air and water purification, artificial gravity, power plant -- have been completely transfigured into a tiny factory.
-   The purpose of the factory is obvious, because all around you are row after row of featureless pyramids, each perfectly identical, each sitting aboard a tiny spacecraft waiting to be launched toward every sector of the galaxy."
+   The purpose of the factory is obvious, because all around you are row after row of featureless pyramids, each perfectly identical, each sitting aboard a miniature spacepod waiting to be launched toward every sector of the galaxy."
 	FSET?	PYRAMID,NDESCBIT \TRUE
 	FCLEAR	PYRAMID,NDESCBIT
 	PRINTI	" The original pyramid sits on a pedestal in the center of the factory, like a monarch impassively surveying its domain."
 	RTRUE	
 ?CCL3:	EQUAL?	RARG,M-ENTER \FALSE
+	ZERO?	FLOYD-SHOT \FALSE
 	CALL	QUEUE,I-FACTORY,-1
 	RSTACK	
 
@@ -2397,9 +2386,10 @@ Each dot is a featureless black spot about a centimeter across."
 	EQUAL?	PRSO,FOIL \?CCL3
 	ZERO?	FLOYD-SHOT /?CCL8
 	PRINTI	"The foil settles over the pyramid like a blanket, reflecting the pyramid's evil emanations right back into itself. A reverberating whine, like an electronically amplified beehive, fills the room. The whine grows louder and louder, the pyramid and its pedestal begin vibrating, and the sharp smell of ozone assaults you.
-   The noise and the smell and the vibration overwhelm you. As your knees buckle and you drop to the deck, the pyramid explodes in a burst of intense white light. The explosion leaves you momentarily blinded, but on all sides you can hear the sounds of systems shutting down. Over the PA system, you hear a mechanized voice, getting slower and deeper like a stereo disc that has lost its power: ""Launch aborted -- launch -- abort --""
+   The noise and the smell and the vibration overwhelm you. As your knees buckle and you drop to the deck, the pyramid explodes in a burst of intense white light. The explosion leaves you momentarily blinded, but you can hear a mechanized voice on the P.A. system, getting slower and deeper like a stereo disc that has lost its power: ""Launch aborted -- launch -- abort --""
+   The replica pyramids fade to darkness, and a subtle change in background sound tells you that the space station's systems and machinery are returning to their normal functions.
    Still dazed, you crawl over to Floyd, lying in a smoking heap near the blackened pedestal. Damaged beyond any conceivable repairs, he half-opens his eyes and looks up at you for the last time. ""Floyd sorry for the way he acted. Floyd knows...you did what you...had to do."" Wincing in pain, he slowly reaches over to touch your hand. ""One last game of Hider-and-Seeker? You be It. Ollie ollie..."" His voice is growing weaker. ""...oxen..."" His eyes close. ""...free..."" His hand slips away from yours, and he slumps backwards, lifeless. One of his compartments falls open, and Floyd's favorite paddleball set drops to the deck.
-   In the long silence that follows, something Plato said echoes through your mind. ""...think instead about the joy-filled times when you and your friend were together."" A noise makes you turn around, and you see Oliver, the little robot that stirred such brotherly feelings in Floyd. Toddling over to you on unsteady legs, he looks uncomprehendingly at Floyd's corpse, but picks up the paddleball set. Oliver looks up at you, tugs on the leg of your "
+   In the long silence that follows, something Plato said echoes through your mind. ""...think instead about the joy-filled times when you and your friend were together."" A noise makes you turn around, and you see Oliver, the little robot that stirred such brotherly feelings in Floyd. Toddling over to you on unsteady legs, he looks uncomprehendingly at Floyd's remains, but picks up the paddleball set. Oliver looks up at you, tugs on the leg of your "
 	PRINTD	PATROL-UNIFORM
 	PRINTI	", and asks in a quavering voice, ""Play game... Play game with Oliver?"""
 	CRLF	
@@ -2410,13 +2400,13 @@ Each dot is a featureless black spot about a centimeter across."
 	CALL	TELL-SCORE
 	QUIT	
 	RTRUE	
-?CCL8:	CALL	BACK-OFF,STR?327
+?CCL8:	CALL	BACK-OFF,STR?337
 	RSTACK	
 ?CCL3:	CALL	TOUCHING?,PYRAMID
 	ZERO?	STACK \?PRD12
 	EQUAL?	PRSA,V?WALK-TO \?CCL10
 ?PRD12:	ZERO?	FLOYD-SHOT \?CCL10
-	CALL	BACK-OFF,STR?327
+	CALL	BACK-OFF,STR?337
 	RSTACK	
 ?CCL10:	EQUAL?	PRSA,V?MEASURE \?CCL16
 	PRINTR	"The pyramid is somewhere between half a meter and a meter across."

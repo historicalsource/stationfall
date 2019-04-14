@@ -157,9 +157,9 @@
 <CONSTANT M-ENTER 3>
 <CONSTANT M-EXIT 4>
 <CONSTANT M-LOOK 5>
-<CONSTANT M-FATAL 6>
-<CONSTANT M-OBJDESC 7>
-<CONSTANT M-OBJDESC? 8>
+<CONSTANT M-OBJDESC 6>
+<CONSTANT M-OBJDESC? 7>
+<CONSTANT M-FATAL 8> ;"must always be 8--compiler turns RFATAL into RETURN 8"
 
 <ZSTART GO> ;"else, ZIL gets confused between verb-word GO and routine GO"
 
@@ -259,16 +259,18 @@ Alpha-Mu-79 to pick up a supply of " ,FORM-NAME ,ELLIPSIS>
 			 <SET TBL ,P-PRSI>
 			 <SET OBJ <GET ,P-PRSO 1>>
 			 .ICNT)
-		        (T
+		        (<EQUAL? <BAND <GETB ,P-SYNTAX ,P-SBITS> ,P-SONUMS> 2>
+			 .ICNT ;"catch case of 'give floyd all' 4/27/87 PDL")
+			(T
 			 1)>>
 	 <COND (<AND <NOT .OBJ>
 		     <1? .ICNT>>
 		<SET OBJ <GET ,P-PRSI 1>>)>
 	 <COND (<EQUAL? ,PRSA ,V?WALK>
-		<SET V <PERFORM-PRSA ,PRSO>>)
+		<SET V <PERFORM ,PRSA ,PRSO>>)
 	       (<0? .NUM>
 		<COND (<0? <BAND <GETB ,P-SYNTAX ,P-SBITS> ,P-SONUMS>>
-		       <SET V <PERFORM-PRSA>>
+		       <SET V <PERFORM ,PRSA>>
 		       <SETG PRSO <>>)
 		      (<NOT ,LIT>
 		       <TELL ,TOO-DARK CR>
@@ -338,8 +340,10 @@ Alpha-Mu-79 to pick up a supply of " ,FORM-NAME ,ELLIPSIS>
 					     <TELL D .OBJ1>)>
 				      <TELL ": ">)>)>
 			<SET TMP T>
-			<SET V <PERFORM-PRSA ,PRSO ,PRSI>>
+			<SET V <PERFORM ,PRSA ,PRSO ,PRSI>>
 			<COND (<EQUAL? .V ,M-FATAL>
+			       <SETG P-CONT <>>
+			       <SETG QUOTE-FLAG <>>
 			       <RETURN>)>)>>)>
 	 <COND (<EQUAL? .V ,M-FATAL>
 		<SETG P-CONT <>>)>
@@ -370,6 +374,7 @@ Alpha-Mu-79 to pick up a supply of " ,FORM-NAME ,ELLIPSIS>
 	 <SETG P-PRSA-WORD <>>
 	 ;"else, when input is just a direction, P-PRSA-WORD will remain
 	   whatever it was for the previous turn"
+	 <SETG P-NUMBER 0>
 	 <SETG PRSA <>>
 	 <SETG PRSO <>>
 	 <SETG PRSI <>>)>
@@ -460,12 +465,12 @@ Alpha-Mu-79 to pick up a supply of " ,FORM-NAME ,ELLIPSIS>
 	 <PREP-PRINT <GETB ,P-SYNTAX ,P-SPREP1>>
 	 <TELL "?]" CR>>
 
-<ROUTINE PERFORM-PRSA ("OPTIONAL" (O <>) (I <>))
+;<ROUTINE PERFORM-PRSA ("OPTIONAL" (O <>) (I <>))
 	 <PERFORM ,PRSA .O .I>
 	 <RTRUE>>
 
 <ROUTINE PERFORM (A "OPTIONAL" (O <>) (I <>) "AUX" V OA OO OI)
-	<COND (,DEBUG
+	;<COND (,DEBUG
 	       <TELL "[Perform: ">
 	       %<COND (<GASSIGNED? ZILCH>
 		       '<TELL N .A>)
@@ -483,7 +488,8 @@ Alpha-Mu-79 to pick up a supply of " ,FORM-NAME ,ELLIPSIS>
 	<SET OO ,PRSO>
 	<SET OI ,PRSI>
 	<SETG PRSA .A>
-	<COND (<AND <NOT ,P-WALK-DIR> <EQUAL? ,IT .O .I>>
+	<COND (<AND <NOT ,P-WALK-DIR>
+		    <EQUAL? ,IT .O .I>>
 	       <COND (<VISIBLE? ,P-IT-OBJECT>
 		      <COND (<EQUAL? ,IT .O>
 			     <SET O ,P-IT-OBJECT>)
@@ -556,9 +562,10 @@ Alpha-Mu-79 to pick up a supply of " ,FORM-NAME ,ELLIPSIS>
 	.V>
 
 <ROUTINE D-APPLY (STR FCN "OPTIONAL" (FOO <>) "AUX" RES)
-	<COND (<NOT .FCN> <>)
+	<COND (<NOT .FCN>
+	       <>)
 	      (T
-	       <COND (,DEBUG
+	       ;<COND (,DEBUG
 		      <COND (<NOT .STR>
 			     <TELL "  Default ->" CR>)
 			    (T
@@ -567,7 +574,7 @@ Alpha-Mu-79 to pick up a supply of " ,FORM-NAME ,ELLIPSIS>
 			       <APPLY .FCN .FOO>)
 			      (T
 			       <APPLY .FCN>)>>
-	       <COND (<AND ,DEBUG
+	       ;<COND (<AND ,DEBUG
 			   .STR>
 		      <COND (<EQUAL? .RES ,M-FATAL>
 			     <TELL "Fatal" CR>)

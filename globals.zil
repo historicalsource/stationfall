@@ -77,14 +77,20 @@ anything you didn't see before." CR>)
 	(IN GLOBAL-OBJECTS)
 	(DESC "number")
 	(SYNONYM NUMBER ONE TWO THREE)
+	(ADJECTIVE BIN) ;"for LOOK AT BIN THREE, etc. in Robot Pool"
 	(ACTION INTNUM-F)>
 
 <ROUTINE INTNUM-F ()
-	 <COND (<AND <OR <NOUN-USED ,W?ONE ,INTNUM>
-			 <NOUN-USED ,W?TWO ,INTNUM>
-			 <NOUN-USED ,W?THREE ,INTNUM>>
+	 <COND (<ADJ-USED ,A?BIN ,INTNUM>
+		<COND (<NOT <EQUAL? ,HERE ,ROBOT-POOL>>
+		       <TELL ,YOU-CANT "see any bin here!]" CR>)
+		      (<G? ,P-NUMBER 3>
+		       <TELL "There are only three bins!" CR>)
+		      (T
+		       <TELL ,REFER-TO-BIN>)>)
+	       (<AND <EQUAL? <GET ,P-NAMW 0> ,W?ONE ,W?TWO ,W?THREE>
 		     <GLOBAL-IN? ,KEYPAD ,HERE>
-		     <VERB? PUSH TYPE>>
+		     <VERB? PUSH TYPE>> ;"TYPE ONE for example"
 		<TELL
 "[Use numerals: for example, TYPE 5 rather than TYPE FIVE.]" CR>)
 	       (<AND <VERB? EXAMINE SHOOT ON OFF KILL MUNG>
@@ -92,9 +98,10 @@ anything you didn't see before." CR>)
 			     ,P-NUMBER>
 		     <IN? ,WELDER ,HERE>>
 		<COND (<PRSO? ,INTNUM>
-		       <PERFORM-PRSA ,WELDER ,PRSI>)
+		       <PERFORM ,PRSA ,WELDER ,PRSI>)
 		      (T
-		       <PERFORM-PRSA ,PRSO ,WELDER>)>)
+		       <PERFORM ,PRSA ,PRSO ,WELDER>)>
+		<RTRUE>)
 	       (<OR <AND <VERB? ENTER>
 			 <EQUAL? ,P-PRSA-WORD ,W?ENTER>
 			 <GLOBAL-IN? ,KEYPAD ,HERE>>
@@ -108,7 +115,7 @@ anything you didn't see before." CR>)
 		<COND (<EQUAL? ,P-NUMBER ,DIAL-SETTING>
 		       <TELL ,SENILITY-STRIKES>)
 		      (<G? ,P-NUMBER 8000>
-		       <TELL "The dial only goes up to 8000." CR>)
+		       <TELL "The dial goes up to only 8000." CR>)
 		      (T
 		       <SETG DIAL-SETTING ,P-NUMBER>
 		       <TELL "\"Click.\"" CR>)>)
@@ -217,10 +224,10 @@ anything you didn't see before." CR>)
 then P-MOBY-FOUND is it. You can treat the 0 and >1 cases alike or differently.
 Always return RFALSE (not handled) if you have resolved the problem."
 	<SET M-F <MOBY-FIND .TBL>>
-	<COND (,DEBUG
+	;<COND (,DEBUG
 	       <TELL "[Found " N .M-F " obj]" CR>)>
 	<COND (<EQUAL? 1 .M-F>
-	       <COND (,DEBUG
+	       ;<COND (,DEBUG
 		      <TELL "[Namely: " D ,P-MOBY-FOUND "]" CR>)>
 	       <COND (.PRSO?
 		      <SETG PRSO ,P-MOBY-FOUND>
@@ -233,7 +240,7 @@ Always return RFALSE (not handled) if you have resolved the problem."
 ;"Protocol: returns .OBJ if that's the one to use
   		    ,NOT-HERE-OBJECT if case was handled and msg TELLed
 		    <> if WHICH-PRINT should be called"
-	       <COND (,DEBUG
+	       ;<COND (,DEBUG
 		      <TELL "[Generic: " D .OBJ "]" CR>)>
 	       <COND (<EQUAL? .OBJ ,NOT-HERE-OBJECT>
 		      <RTRUE>)
@@ -267,10 +274,22 @@ Always return RFALSE (not handled) if you have resolved the problem."
 
 <ROUTINE GROUND-F ()
 	 <COND (<VERB? CLIMB-ON ENTER>
-		<SETG C-ELAPSED 31>
-		<TELL "After a brief squat on the floor, you stand again." CR>)
+		<COND (,STUNNED
+		       <TELL ,LOOK-AROUND>)
+		      (T
+		       <SETG C-ELAPSED 31>
+		       <TELL
+"After a brief squat on the floor, you stand again." CR>)>)
+	       (<VERB? CLEAN>
+		<SETG AWAITING-REPLY 1>
+	 	<QUEUE I-REPLY <+ ,C-ELAPSED 2>>
+		<TELL "Do you also do windows?" CR>)
 	       (<VERB? LOOK-UNDER>
 		<IMPOSSIBLES>)
+	       (<AND <VERB? OPEN>
+		     <EQUAL? ,HERE ,BOTTOM-OF-AIR-SHAFT>>
+		<PERFORM ,V?OPEN ,GRATING>
+		<RTRUE>)
 	       (<VERB? LEAVE>
 		<DO-WALK ,P?UP>)>>
 
@@ -295,11 +314,18 @@ Always return RFALSE (not handled) if you have resolved the problem."
 <ROUTINE CEILING-F ()
 	 <COND (<AND <VERB? EXAMINE SEARCH>
 		     <EQUAL? ,HERE ,PET-STORE>>
-		<MOVE ,PANEL ,HERE>
-		<THIS-IS-IT ,PANEL>
-		<TELL
-"As you look carefully, you notice something that a casual inspection of
-the Pet Store would never have uncovered: a panel mounted in the ceiling." CR>)
+		<COND (<IN? ,PANEL ,HERE>
+		       <TELL
+"There's a panel mounted in the ceiling. ">
+		       <PERFORM ,V?EXAMINE ,PANEL>
+		       <RTRUE>)
+		      ;"if panel has no LOC, it means that you blew it up"
+		      (<IN? ,PANEL ,LOCAL-GLOBALS>
+		       <MOVE ,PANEL ,HERE>
+		       <THIS-IS-IT ,PANEL>
+		       <TELL
+"As you look carefully, you notice something that a casual inspection of the
+Pet Store would never have uncovered: a panel mounted in the ceiling." CR>)>)
 	       (<AND <VERB? EXAMINE>
 		     <EQUAL? ,HERE ,DOME>>
 		<TELL ,DOME-DESC CR>)
@@ -338,7 +364,7 @@ the Pet Store would never have uncovered: a panel mounted in the ceiling." CR>)
 		<COND (<NOT ,LIT>
 		       <TELL ,TOO-DARK CR>)
 		      (<AND <EQUAL? ,HERE ,GREASY-STRAW>
-			    <IN? ,NECTAR ,LOCAL-GLOBALS>>
+			    <NOT <FSET? ,NECTAR ,TOUCHBIT>>>
 		       <MOVE ,NECTAR ,HERE>
 		       <THIS-IS-IT ,NECTAR>
 		       <TELL
@@ -394,10 +420,9 @@ the Pet Store would never have uncovered: a panel mounted in the ceiling." CR>)
 "   You are approaching the station from slightly above it (on the galactic
 plane), thus offering a good view of the station's layout. In the center is
 the large, spherical Command Module. Jutting \"north\" from it is a smaller
-Sub-Module. Joining the Command Module, at its two other connection points,
-is a tangle of tubes and space bubbles and derelict rockets. These form a
-\"village,\" the sort of seedy, unauthorized village that frequently collects
-around a space station." CR>)
+Sub-Module. Joining the Command Module, at its two other connection points,"
+,TANGLE-OF-TUBES " These form a \"village,\" the sort of seedy, unauthorized
+village that frequently collects around a space station." CR>)
 		      (T
 		       <TELL
 "You see nothing but the majestic sweep of the galaxy." CR>)>)
@@ -410,7 +435,7 @@ around a space station." CR>)
 	(IN LOCAL-GLOBALS)
 	(DESC "sign")
 	(SYNONYM SIGN)
-	(ADJECTIVE EYE-CATCHING)
+	(ADJECTIVE LARGE RED EYE-CATCHING)
 	(FLAGS READBIT)
 	(ACTION SIGN-F)>
 
@@ -569,6 +594,10 @@ of multi-part forms, it's far outside your area of expertise." CR>)>)
 		<JIGS-UP
 "Done. You might remain alive long enough to type EXAMINE MY STUMP.
 Oops, I guess not.">)
+	       (<VERB? DRILL>
+		<TELL
+"Hmmm. Are you trying for a hole in " 'PRSO
+" to match the hole in your head?" CR>)
 	       (<AND <VERB? TAKE-WITH>
 		     <PRSI? ,HANDS>>
 		<PERFORM ,V?TAKE ,PRSO>
@@ -586,7 +615,9 @@ Oops, I guess not.">)
 	 <COND (<AND <VERB? PUT-ON RUN-OVER>
 		     <PRSO? ,TONGUE>>
 		<PERFORM ,V?TASTE ,PRSI>
-		<RTRUE>)>> 
+		<RTRUE>)
+	       (<VERB? DRILL>
+		<HANDS-F>)>> 
 
 <OBJECT PROTAGONIST
 	(IN DECK-TWELVE)
@@ -737,7 +768,7 @@ Sub-Module connector you might have expected." CR>)>)
 		     <IN? ,FLOYD ,COPILOT-SEAT>>
 		<RFALSE>)
 	       (<AND <IN? ,PROTAGONIST ,COPILOT-SEAT>
-		     <IN? ,FLOYD ,COPILOT-SEAT>>
+		     <IN? ,FLOYD ,PILOT-SEAT>>
 		<RFALSE>)
 	       (T
 		<RTRUE>)>>
@@ -775,20 +806,38 @@ Sub-Module connector you might have expected." CR>)>)
 	(ACTION FURNISHING-F)>
 
 <ROUTINE FURNISHING-F ()
-	 <COND (<VERB? OPEN SEARCH LOOK-INSIDE EXAMINE>
+	 <COND (<VERB? ENTER OPEN SEARCH LOOK-INSIDE EXAMINE>
 		<TELL
 "You merely find a few personal items of little interest." CR>)
 	       (<VERB? PUT PUT-ON>
 		<TELL
 "The " D ,PRSI " is such a mess that you can't find a good spot
 to put" TR ,PRSO>)>>
+
+<OBJECT VILLAGE
+	(IN LOCAL-GLOBALS)
+	(DESC "village")
+	(SYNONYM VILLAGE)
+	(ADJECTIVE SEEDY NONREGULATION UNAUTHORIZED ILLEGAL SPACE)
+	(ACTION VILLAGE-F)>
+
+<ROUTINE VILLAGE-F ()
+	 <COND (<AND <EQUAL? ,HERE ,SPACETRUCK>
+		     <OR <NOT <EQUAL? ,SPACETRUCK-COUNTER 4>>
+			 <NOT <EQUAL? ,COURSE-PICKED ,RIGHT-COURSE>>>>
+		<CANT-SEE ,VILLAGE>)
+	       (<VERB? ENTER WALK-TO EXIT LEAVE DISEMBARK>
+		<V-WALK-AROUND>)
+	       (<AND <VERB? EXAMINE>
+		     <EQUAL? ,HERE ,SPACETRUCK>>
+		<TELL "The village" ,TANGLE-OF-TUBES CR>)>>
 
 ;"sleeping"
 
 <OBJECT BED
         (IN LOCAL-GLOBALS)
 	(DESC "bed")
-	(SYNONYM BED)
+	(SYNONYM BED BEDS)
 	(FLAGS VEHBIT SEARCHBIT CONTBIT OPENBIT)
 	(ACTION BED-F)>
 
@@ -797,7 +846,9 @@ to put" TR ,PRSO>)>>
 		     <NOT <GLOBAL-IN? ,BED ,HERE>>>
 		<TELL "There's no bed here!" CR>)
 	       (<VERB? ENTER WALK-TO>
-		<COND (<G? ,SLEEPY-LEVEL 0>
+		<COND (,STUNNED
+		       <YOURE-STUNNED>)
+		      (<G? ,SLEEPY-LEVEL 0>
 		       <MOVE ,PROTAGONIST ,BED>
 		       <QUEUE I-FALL-ASLEEP 22>
 		       <DEQUEUE I-SLEEP-WARNINGS>
@@ -848,8 +899,7 @@ asleep in short order." CR>)
 <ROUTINE I-SLEEP-WARNINGS ()
 	 <COND (<OR <AND <IN? ,WELDER ,HERE>
 		     	 <G? ,SLEEPY-LEVEL 3>>
-		    <AND <G? ,PLATO-ATTACK-COUNTER 0>
-		         <IN? ,PLATO ,HERE>>>
+		    ,STUNNED>
 		<QUEUE I-HUNGER-WARNINGS 2>
 		<RFALSE>)>
 	 <SETG SLEEPY-LEVEL <+ ,SLEEPY-LEVEL 1>>
@@ -890,7 +940,9 @@ a nice safe place to sleep." CR>)
 				   <NOT <FSET? ,HERE ,WEIGHTLESSBIT>>>
 			      <TELL "to the deck and fall ">)>
 		       <TELL "into a deep but fitful sleep.">)>
-		<WAKING-UP>)>>
+		<WAKING-UP>)>
+	 <COND (<NOT <IN? ,PROTAGONIST ,BED>>
+		<STOP>)>>
 
 <ROUTINE I-FALL-ASLEEP ()
 	 <COND (<IN? ,WELDER ,HERE>
@@ -929,7 +981,7 @@ the water. You try to scream, but cannot. You feel your life draining away"
 
 "You wake up in a huge stadium, watching an important ceremony. It's a Stellar
 Patrol promotion ceremony on Tremain! Suddenly your own name echoes over the
-PA system -- and down below you see YOURSELF walking up the steps to the stage!
+P.A. system -- and down below you see YOURSELF walking up the steps to the stage!
 The presiding admiral describes your heroism on Resida, mentioning that you
 were awarded the key to the planet, and then asks the ceremonial question,
 \"Do you accept promotion to Lieutenant First Class?\" You try to yell \"No!\"
@@ -985,16 +1037,30 @@ Moral: don't screw up vital assignments like picking up " ,FORM-NAME>
 			 <FSET? ,DOCKING-BAY-2 ,TOUCHBIT>
 			 <PROB <* ,DAY 40>>>
 		    <AND <ULTIMATELY-IN? ,OSTRICH-NIP>
-			 <IN? ,OSTRICH ,HERE>>>
+			 <IN? ,OSTRICH ,HERE>>
+		    <IN? ,EXPLOSIVE ,DRILLED-HOLE>>
 		<JIGS-UP
 "A movement awakens you in the middle of the night! Through unfocused
 eyes you see a large machine rolling menacingly closer! A bright light
 leaps from it, straight toward...">)
+	       (<AND ,EXPLOSIVE-CONNECTED
+		     ,TIMER-CONNECTED
+		     <IN? ,DIODE-M ,DETONATOR>
+		     <G? ,TIMER-SETTING 0>>
+		<COND (<EQUAL? <META-LOC ,EXPLOSIVE> ,HERE>
+		       <JIGS-UP "Snore...snore...KABOOM!">)
+		      (T
+		       <DESTROY-EXPLOSIVE-CONT>
+		       <REMOVE ,TIMER>
+		       <REMOVE ,EXPLOSIVE>
+		       <REMOVE ,DETONATOR>)>)
 	       (<PROB 60>
 		<TELL "..." <PICK-ONE ,DREAMS> ,ELLIPSIS>)>
 	 <SETG DAY <+ ,DAY 1>>
 	 <SETG ROBOT-EVILNESS <+ ,ROBOT-EVILNESS 1>>
 	 <I-ROBOT-EVILNESS>
+	 <SETG TIMER-SETTING 0>
+	 <DEQUEUE I-TIMER>
 	 <SETG SLEEPY-LEVEL 0>
 	 <SETG SUIT-PRESSED <>>
 	 <SETG FLOYD-ANGUISHED <>>
@@ -1020,6 +1086,10 @@ leaps from it, straight toward...">)
 		<FCLEAR ,HEADLAMP ,ACTIVEBIT>
 		<FCLEAR ,HEADLAMP ,ONBIT>
 		<SETG HEADLAMP-COUNTER 0>)>
+	 <COND (<RUNNING? ,I-LOG-READER>
+		<REMOVE ,LOG-READER>
+		<DEQUEUE I-LOG-READER>
+		<FCLEAR ,COMMANDERS-OFFICE ,TOUCHBIT>)>
 	 <COND (<G? ,SOUP-WARMTH 0>
 		<COND (<FSET? ,THERMOS ,OPENBIT>
 		       <SETG SOUP-WARMTH 0>)
@@ -1114,15 +1184,15 @@ friend,\" says Floyd with unbounded exuberance and a wide grin." CR>
 		<MOVE ,FLOYD ,HERE>)>
 	 <COND (,LIT
 		<CRLF>
-		<V-LOOK>)>>
+		<V-LOOK>)>
+	 <STOP>>
 
 ;"thirst and hunger"
 
 <GLOBAL HUNGER-LEVEL 0>
 
 <ROUTINE I-HUNGER-WARNINGS ()
-	 <COND (<AND <G? ,PLATO-ATTACK-COUNTER 0>
-		     <IN? ,PLATO ,HERE>>
+	 <COND (,STUNNED
 		<QUEUE I-HUNGER-WARNINGS 2>
 		<RFALSE>)>
 	 <SETG HUNGER-LEVEL <+ ,HUNGER-LEVEL 1>>
@@ -1146,7 +1216,8 @@ hungry and thirsty." CR>)
 "If you don't eat or drink something in a few millichrons, you'll
 probably pass out." CR>)
 	       (<EQUAL? ,HUNGER-LEVEL 5>
-		<JIGS-UP "You collapse from extreme thirst and hunger.">)>>
+		<JIGS-UP "You collapse from extreme thirst and hunger.">)>
+	 <STOP>>
 
 ;"the welding menace"
 
@@ -1191,6 +1262,7 @@ vanishes! A wave of hot vapor pushes you backwards.">
 		<COND (<VISIBLE? ,EXPLOSIVE>
 		       <TELL
 " As the heat wave hits the explosive, it " ,SUBLIMES-INTO-FREZONE>
+		       <DEQUEUE I-EXPLOSIVE-MELT>
 		       <REMOVE-CAREFULLY ,EXPLOSIVE>)>
 		<COND (<AND <IN? ,OSTRICH ,HERE>
 			    <FSET? ,OSTRICH ,TOUCHBIT>>
@@ -1215,46 +1287,7 @@ vanishes! A wave of hot vapor pushes you backwards.">
 
 <GLOBAL WELDER-COUNTER 0> ;"how close is the attacking welder to you?"
 
-<ROUTINE I-WELDER ()
-	 <COND (<IN? ,WELDER ,HERE>
-		<TELL "   ">
-	 	<SETG WELDER-COUNTER <+ ,WELDER-COUNTER 1>>
-		<COND (<NOT ,LIT>
-		       <REMOVE ,WELDER>
-		       <SETG WELDER-COUNTER 0>
-		       <TELL "Y" ,HEAR-WELDER-LEAVE>
-		       <RTRUE>)
-		      (<EQUAL? ,WELDER-COUNTER 2>
-		       <TELL "The welder moves closer. ">)
-		      (<NOT <EQUAL? ,WELDER-COUNTER 3>>
-		       <JIGS-UP
-"A powerful arc of raw energy bridges the gap between two of the monster's
-welding extensions. Unfortunately, you were pretty much right between the
-same two extensions at that moment.">)>
-		<PERFORM ,V?EXAMINE ,WELDER>)
-	       (<G? ,WELDER-COUNTER 0>
-		<REMOVE ,WELDER>
-		<SETG WELDER-COUNTER 0>
-		<TELL "   Nearby, y" ,HEAR-WELDER-LEAVE>)
-	       (<AND <NOT <FSET? ,HERE ,NWELDERBIT>>
-		     <NOT <IN? ,PROTAGONIST ,BED>>
-		     ,LIT
-		     <PROB ,NUMBER-OF-WELDERS>>
-		<COND (<AND <G? ,PLATO-ATTACK-COUNTER 0>
-		     	    <IN? ,PLATO ,HERE>>
-		       <RFALSE>)
-		      (<AND <EQUAL? ,HERE ,SPACETRUCK>
-			    <NOT <FSET? ,SPACETRUCK-HATCH ,OPENBIT>>>
-		       <RFALSE>)>
-		<MOVE ,WELDER ,HERE>
-		<SETG WELDER-COUNTER <+ ,WELDER-COUNTER 1>>
-		<SETG WELDER-TABLE-POINTER <RANDOM ,NUMBER-OF-WELDERS>>
-		<TELL "   You spot a " 'WELDER " approaching. ">
-		<COND (<NOT <FSET? ,WELDER ,TOUCHBIT>>
-		       <FSET ,WELDER ,TOUCHBIT>
-		       <PERFORM ,V?WHAT ,WELDER>)>
-		<PERFORM ,V?EXAMINE ,WELDER>
-		<STOP>)>>
+;"routine I-WELDER moved to INTERRUPTS file"
 
 ;"utility routines and shared strings"
 
@@ -1283,7 +1316,10 @@ same two extensions at that moment.">)>
 <ROUTINE CANT-SEE (OBJ)
 	 <SETG P-WON <>>
 	 <TELL ,YOU-CANT "see">
-	 <COND (<NOT <NAME? .OBJ>>
+	 <COND (<NOT <NAME? <COND (<PRSO? .OBJ>
+				   <GET ,P-NAMW 0>)
+				  (T
+				   <GET ,P-NAMW 1>)>>>
 		<TELL " any">)>
 	 <COND (<EQUAL? .OBJ ,PRSI>
 		<PRSI-PRINT>)
@@ -1303,16 +1339,19 @@ same two extensions at that moment.">)>
 		     <EQUAL? .OBJ ,TIMER ,DETONATOR>>
 		<SETG TIMER-CONNECTED <>>
 		<SET ALSO T>
-		<COND (<VISIBLE? ,DETONATOR>
+		<COND (<VISIBLE? ,TIMER>
 		       <TELL " (The timer is" ,NO-LONGER-ATTACHED>)>)
 	       (<AND ,EXPLOSIVE-CONNECTED
 		     <EQUAL? .OBJ ,EXPLOSIVE ,DETONATOR>>
 		<SETG EXPLOSIVE-CONNECTED <>>
-		<COND (<VISIBLE? ,DETONATOR>
+		<COND (<VISIBLE? ,EXPLOSIVE>
 		       <TELL " (The explosive is">
 		       <COND (.ALSO
 			      <TELL " also">)>
 		       <TELL ,NO-LONGER-ATTACHED>)>)>
+	 <COND (<AND <IN? ,EXPLOSIVE ,THERMOS>
+		     <NOT <FSET? ,THERMOS ,OPENBIT>>>
+		<SETG THERMOS-FILLED-WITH-GAS T>)>
 	 <FSET .OBJ ,TOUCHBIT>
 	 <FCLEAR .OBJ ,TRYTAKEBIT>
 	 <REMOVE .OBJ>>
@@ -1358,14 +1397,20 @@ same two extensions at that moment.">)>
 		     <NOT <PRSO? ,ROBOT-PICKED>>>
 		<TELL " from outside the bin">)>
 	 <TELL ,PERIOD-CR>
-	 <STOP>>
+	 <COND (,P-MULT
+		<RTRUE>)
+	       (T
+	        <STOP>)>>
 
 <ROUTINE DO-FIRST (STRING "OPTIONAL" (OBJ <>))
 	 <TELL ,YOULL-HAVE-TO .STRING>
 	 <COND (.OBJ
 		<TPRINT .OBJ>)>
 	 <TELL " first." CR>
-	 <STOP>>
+	 <COND (,P-MULT ;"for example, don't stop a TAKE ALL for worn objects"
+		<RTRUE>)
+	       (T
+	        <RFATAL>)>>
 
 <ROUTINE DOESNT-FIT (STRING)
 	 <TELL
@@ -1420,6 +1465,13 @@ same two extensions at that moment.">)>
 	 <COND (<NOT <EQUAL? .OBJ ,LEASH>>
 		<CRLF>)>
 	 <RTRUE>>
+
+<ROUTINE MESS (STRING)
+	 <TELL
+"You create a " .STRING "ish mess. In the wink of an eye, an army of common
+Cassiopeian cockroaches swarms out of the \"woodwork,\" devours the "
+.STRING ", and return to their hidden recesses. You spend a moment pondering
+the competence of the station's Extermination Officer">>
 
 ;<ROUTINE UNIMPORTANT-THING-F ()
 	 <TELL "That's not important; leave it alone." CR>>
@@ -1555,3 +1607,21 @@ engine vents like steam from the nostrils of an angry bull.">
 <GLOBAL LADDER-LEADS ", and a ladder leads both upward and downward.">
 
 <GLOBAL TOO-LONG-TO-WAIT "That's too long to wait.|">
+
+<GLOBAL CALLOUS-DISREGARD
+". 2. A callous disregard for scientific accuracy on the part of the author">
+
+<GLOBAL REFER-TO-BIN
+"[Please refer to them as FIRST BIN, SECOND BIN, and THIRD BIN.]|">
+
+<GLOBAL FLOYDS-HANGING-IN-AIR-COMMENT
+"   \"Boy, that looks like fun!\" says Floyd, peering up at you.
+\"Can Floyd try it? Huh? Please?\"|">
+
+<GLOBAL TANGLE-OF-TUBES
+" is a tangle of tubes and space bubbles and derelict rockets.">
+
+<GLOBAL WONT-BUDGE "It won't budge.|">
+
+<GLOBAL FLOYD-SNIFFS
+"Floyd sniffs, \"Please leave Floyd alone for a while.\"|">

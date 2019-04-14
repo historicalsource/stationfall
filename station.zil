@@ -65,7 +65,7 @@ door leads south, and there's an opening to the north.")
 	(DESC "twenty-ohm bedistor")
 	(SYNONYM BEDISTOR)
 	(ADJECTIVE TWENTY OHM)
-	(SIZE 8)
+	(SIZE 5)
 	(FLAGS TAKEBIT)
 	(PLATO-ASK-ABOUT
 "I'm really not at all mechanically inclined. My sincerest apologies.")
@@ -89,6 +89,7 @@ door leads south, and there's an opening to the north.")
 	(SYNONYM JAMMER SOCKETS FREQUENCY)
 	(FLAGS TAKEBIT CONTBIT SEARCHBIT OPENBIT LIGHTBIT)
 	(CAPACITY 10)
+	(SIZE 15)
 	(ACTION JAMMER-F)>
 
 <GLOBAL JAMMER-SETTING 337>
@@ -178,10 +179,11 @@ doorway to the northeast.")
       (IN ROOMS)
       (DESC "North Connection")
       (LDESC
-"The corridor widens here as it approaches the skin of the space station at
-the point where a Scientific Sub-Module would connect. Sure enough, the
+"The corridor widens here as it approaches the skin of the space station
+at the point where a Scientific Sub-Module would connect. Sure enough, the
 connecting tube of a Sub-Module begins just to the north! An auto-door lies
-to the west. Opposite it, a doorway leads east.")
+to the west. Opposite it, a doorway leads east. A junction is visible to
+the south.")
       (NORTH TO TUBE)
       (EAST TO PX)
       (SOUTH TO NORTH-JUNCTION)
@@ -319,8 +321,8 @@ can't get a grip on it!" CR>)
 		<SETG ROBOT-EVILNESS <+ ,ROBOT-EVILNESS 1>>
 		<SETG SCORE <+ ,SCORE 6>>
 		<TELL
-" It jerks its head back out, squawking even louder, and a moment later a "
-D <FIRST? ,DISPENSER> " falls out of the hole" ,LANDS-ON-FLOOR>
+" It jerks its head back out, squawking even more loudly, and a moment
+later a " D <FIRST? ,DISPENSER> " falls out of the hole" ,LANDS-ON-FLOOR>
 		<MOVE <FIRST? ,DISPENSER> ,HERE>)>>
 
 <OBJECT LARGE-BIT
@@ -340,6 +342,7 @@ D <FIRST? ,DISPENSER> " falls out of the hole" ,LANDS-ON-FLOOR>
 	(SYNONYM TIMER)
 	(ADJECTIVE ALL-PURPOSE)
 	(FLAGS TAKEBIT)
+	(SIZE 10)
 	(ACTION TIMER-F)>
 
 <GLOBAL TIMER-SETTING 0>
@@ -360,12 +363,12 @@ number up to 100, and is currently set to " N ,TIMER-SETTING ". The timer ">
 		<COND (<NOT ,PRSI>
 		       <TELL ,NEXT-TIME>)
 		      (<NOT <PRSI? ,INTNUM>>
-		       <TELL "You can only set the timer to a number!" CR>)
+		       <TELL "You can set the timer only to a number!" CR>)
 		      (<G? ,P-NUMBER 100>
-		       <TELL "The timer only has settings up to 100." CR>)
+		       <TELL "The timer has settings up to only 100." CR>)
 		      ;(<NOT <EQUAL? <MOD ,P-NUMBER 10> 0>>
 		       <TELL
-"You can only set the timer to increments of 10." CR>)
+"You can set the timer only to increments of 10." CR>)
 		      (T
 		       <SETG TIMER-SETTING ,P-NUMBER>
 		       <TELL "You set the timer to " N ,TIMER-SETTING>
@@ -378,7 +381,8 @@ number up to 100, and is currently set to " N ,TIMER-SETTING ". The timer ">
 	       (<AND <VERB? DISCONNECT>
 		     <NOT ,PRSI>
 		     ,TIMER-CONNECTED>
-		<PERFORM-PRSA ,TIMER ,DETONATOR>)
+		<PERFORM, PRSA ,TIMER ,DETONATOR>
+		<RTRUE>)
 	       (<AND <VERB? CONNECT>
 		     <EQUAL? ,EXPLOSIVE ,PRSO ,PRSI>>
 		<TELL
@@ -392,65 +396,19 @@ number up to 100, and is currently set to " N ,TIMER-SETTING ". The timer ">
 		     <QUEUED? ,I-TIMER>>
 		<TELL "\"Tick, tick...\"" CR>)>>
 
-<ROUTINE I-TIMER ()
-	 <QUEUE I-TIMER -1>
-	 <SETG TIMER-SETTING <- ,TIMER-SETTING ,C-ELAPSED>>
-	 <COND (<L? ,TIMER-SETTING 1>
-		<DEQUEUE I-TIMER>
-		<SETG TIMER-SETTING 0>)>
-	 <COND (<VISIBLE? ,TIMER>
-		<TELL "   The timer reaches " N ,TIMER-SETTING>
-		<COND (<EQUAL? ,TIMER-SETTING 0>
-		       <TELL " and stops ticking">)>
-		<TELL ".">)>
-	 <COND (<AND <EQUAL? ,TIMER-SETTING 0>
-		     ,TIMER-CONNECTED
-		     <EQUAL? ,DETONATOR <LOC ,DIODE-M> <LOC ,DIODE-J>>>
-		<COND (<IN? ,DIODE-J ,DETONATOR>
-		       <MOVE ,DIODE-J ,LOCAL-GLOBALS>
-		       <COND (<VISIBLE? ,DETONATOR>
-		       	      <TELL
-" You hear a sizzling sound from the detonator">
-			      <COND (<NOT <FSET? ,SPACESUIT ,WORNBIT>>
-				     <TELL
-", and a burnt odor assaults your nose">)>
-			      <TELL ".">)>)
-		      (,EXPLOSIVE-CONNECTED
-		       <COND (<EQUAL? <META-LOC ,EXPLOSIVE> ,HERE>
-			      <TELL
-" The explosive fulfills its destiny by exploding. You simultaneously fulfill
-your own destiny: turning into itsy-bitsy pieces of " ,LFC>
-			      <JIGS-UP ".">)
-			     (<IN? ,EXPLOSIVE ,DRILLED-HOLE>
-			      <QUEUE I-LIGHTS-OUT <+ <RANDOM 200> 20>>
-			      <FSET ,SAFE ,OPENBIT>
-			      <FSET ,SAFE ,TOUCHBIT>
-			      <FCLEAR ,SAFE ,LOCKEDBIT>)
-			     (<NOT <IN? <LOC ,EXPLOSIVE> ,ROOMS>>
-			      <DESTROY-EXPLOSIVE-CONT>)>
-		       <COND (<NEXT-ROOM? ,TIMER>
-			      <TELL
-"   You hear a deafening explosion from very nearby!" CR>)
-			     (T
-			      <TELL
-"   You hear a loud but distant explosion." CR>)>
-		       <REMOVE ,TIMER>
-		       <REMOVE ,EXPLOSIVE>
-		       <REMOVE ,DETONATOR>)
-		      (<VISIBLE? ,TIMER>
-		       <TELL " You hear a click from the detonator.">)>)>
-	 <COND (<VISIBLE? ,TIMER>
-		<CRLF>)>>
+;"routine I-TIMER moved to INTERRUPTS file"
 
-<ROUTINE DESTROY-EXPLOSIVE-CONT ("AUX" L)
+<ROUTINE DESTROY-EXPLOSIVE-CONT ("AUX" L X)
 	 <SET L <LOC ,EXPLOSIVE>>
 	 <REPEAT ()
-		 <COND (<IN? <LOC .L> ,ROOMS>
-			<REMOVE .L>
-			<COND (<EQUAL? .L ,PEDESTAL>
-			       <MOVE .L ,ALIEN-SHIP>)>
+		 <COND (<IN? .L ,ROOMS> ;"don't remove the room!"
+			<RETURN>)
+		       (<FSET? .L ,VEHBIT> ;"don't remove a vehicle!"
 			<RETURN>)>
-		 <SET L <LOC .L>>>>
+		 <SET X <LOC .L>>
+		 <COND (<NOT <EQUAL? .L ,PEDESTAL>>
+			<REMOVE .L>)>
+		 <SET L .X>>>
 
 <ROOM SICK-BAY
       (IN ROOMS)
@@ -531,8 +489,9 @@ a small, grimy connector">)
 		      (T
 		       <TELL "shut tight">)>
 		<TELL
-". Next to the hatch is a slot. There is a door northwest of here, and doorways
-to the south and southwest.">)>>
+". Next to the hatch is a slot. There is a door northwest of here,
+and doorways to the south and southwest. There's a junction in the
+corridor west of you.">)>>
 
 <ROOM SOUTH-JUNCTION
       (IN ROOMS)
@@ -581,6 +540,7 @@ where every system can be monitored. ">
 
 <ROUTINE SYSTEM-MONITORS-F ()
 	 <COND (<VERB? EXAMINE READ>
+		<PUT 0 8 <BOR <GET 0 8> 2>>	;"FIXED-FONT-ON"
 		<TELL
 "System:           Status:|
 COMMUNICATION     ">
@@ -627,7 +587,8 @@ PRINTING          ">
 		       <TELL "GREEN">)
 		      (T
 		       <TELL "RED">)>
-		<CRLF>)>>
+		<CRLF>
+		<PUT 0 8 <BAND <GET 0 8> -3>>	;"FIXED-FONT-OFF")>>
 
 <ROOM COMM-CENTER
       (IN ROOMS)
@@ -638,7 +599,7 @@ PRINTING          ">
       (GLOBAL EQUIPMENT)
       (ACTION COMM-CENTER-F)
       (THINGS <PSEUDO (RED BUTTON COMM-BUTTON-F)
-		      (<> SCREEN SCREEN-F)>)>
+		      (MESSAGE SCREEN SCREEN-F)>)>
 
 <ROUTINE COMM-CENTER-F (RARG)
 	 <COND (<EQUAL? .RARG ,M-LOOK>
@@ -648,7 +609,7 @@ with the Stellar Patrol Command and the rest of the Third Galactic Union.
 Although regulations state that the Comm Center must be monitored around the
 clock, ten chrons per day, there's no one on duty.|
    Most of the equipment here is too complicated for anyone without Deep-Space
-Communications Training to use. However, the red button of the wide-band
+Communication Training to use. However, the red button of the wide-band
 emergency beacon is well-marked. Next to the button is a large screen for
 displaying incoming messages. ">
 		<SCREEN-F T>
@@ -685,7 +646,7 @@ twitching all over.">)>
 		<COND (,MESSAGE-RECEIVED
 		       <TELL
 "\"From: Forms Control Officer, S.P.S. Duffy|
- To:   " ,LFC " 1451-532-716|
+ To:   " ,LFC " 1451-352-716|
  Re:   Current assignment|
  Msg:  Two thousand reams of " ,FORM-NAME " found in mislabelled pallet. No
 additional supplies needed. Abort assignment and return to Duffy.\"" CR>)
@@ -697,26 +658,37 @@ additional supplies needed. Abort assignment and return to Duffy.\"" CR>)
 
 <ROUTINE I-MESSAGE ()
 	 <SETG MESSAGE-RECEIVED T>
+	 <FCLEAR ,COMM-CENTER ,TOUCHBIT>
 	 <TELL "   ">
 	 <COND (<FSET? ,SPACESUIT ,WORNBIT>
 		<TELL "The space suit picks up a message from">)
 	       (T
 		<TELL "You hear a message over">)>
 	 <TELL
-" the station's PA system: \"Deep space communication received at
+" the station's P.A. system: \"Deep-space communication received at
 Comm Center. No operator on duty. This is a recording.\"" CR>>
 
 <ROOM FILE-ROOM
       (IN ROOMS)
       (DESC "File Room")
       (LDESC
-"This is the room where octuplet copies of important forms are stored. Since
-it is only about a hundred square meters, this room cannot hold more than a
-few days worth of storage before being dumped to nanofilm. Mercifully, there
-is an exit to the northeast.")
+"This is the room where octuplet copies of forms are stored. Since it's only
+a hundred square meters, this room cannot hold more than a few days' worth of
+storage before being dumped to nanofilm. Mercifully, there is an exit to the
+northeast.")
       (NE TO SOUTH-JUNCTION)
       (OUT TO SOUTH-JUNCTION)
-      (FLAGS RLANDBIT NWELDERBIT)>
+      (FLAGS RLANDBIT NWELDERBIT)
+      (THINGS <PSEUDO (FILES FILE FILES-F)
+		      (<> FORM FILES-F)
+		      (<> FORMS FILES-F)>)>
+
+<ROUTINE FILES-F ()
+	 <COND (<VERB? EXAMINE READ>
+		<TELL
+"The word \"boring\" does not BEGIN to describe them." CR>)
+	       (<VERB? CRUMPLE MUNG>
+		<TELL ,VIOLATION-OF-ACT>)>>
 
 <ROOM COMMANDERS-OFFICE
       (IN ROOMS)
@@ -738,7 +710,7 @@ is an exit to the northeast.")
 		<ROB ,EXERCISE-MACHINE ,GYM>)
 	       (<EQUAL? .RARG ,M-LOOK>
       		<TELL
-"This is the Station Commander's HQ, with doors to the south and east,
+"This is the Station Commander's H.Q., with doors to the south and east,
 and doorways to the north and northwest.">
 		<COND (<NOT <IN? ,LOG-READER ,HERE>>
 		       <TELL
@@ -794,7 +766,7 @@ tiny red button and a microphone/speaker. ">
 		     <G? ,LOG-READER-COUNTER 11>>
 		<TELL "\"Whine.\"" CR>)
 	       (<VERB? TAKE>
-		<TELL "It's bolted down." CR>)
+		<TELL ,WONT-BUDGE>)
 	       (<VERB? SHOOT>
 		<DEQUEUE I-LOG-READER>
 		<RFALSE>)>>
@@ -821,40 +793,40 @@ tiny red button and a microphone/speaker. ">
 	 <SETG LOG-COUNTER <+ ,LOG-COUNTER 1>>
 	 <COND (<EQUAL? ,LOG-COUNTER 1>
 		<TELL "A gravelly voice comes from the " 'LOG-READER ": ">)>
-	 <TELL "\"">
+	 <TELL "\"11349.12.">
 	 <COND (<EQUAL? ,LOG-COUNTER 1>
 		<TELL
-"11349.12.2.3800: Some kripping jokers have been pilfering the station's fuel
+"2.3800: Some kripping jokers have been pilfering the station's fuel
 cells to go out on joyrides! I have hidden the fuel cells up in the Dome's "
 'HOUSING ", slapped a lock on the bin, and deposited the key in my safe!
 There will be no joyriding in my command!">)
 	       (<EQUAL? ,LOG-COUNTER 2>
 		<TELL
-"11349.12.2.5100: Reproductions Officer Hausberg reports that collater
+"2.5100: Reproductions Officer Hausberg reports that collater
 #22 is off-line for routine service. Estimates one or two days downtime.
 Also, unidentified craft detected in sector. No response to hailings.
 Sending Finsterwald to intercept.">)
 	       (<EQUAL? ,LOG-COUNTER 3>
 		<TELL
-"11349.12.2.6750: Unidentified craft towed to Docking Bay #1. It is a
+"2.6750: Unidentified craft towed to Docking Bay #1. It is a
 single-cabin vessel of unfamiliar alien origin. The only things aboard were
 the remains of one of the aliens, and a featureless pyramid. I'll leave it
-to the eggheads, I've got a problem of my own: a report that a used spaceship
+to the eggheads; I've got a problem of my own: a report that a used-spaceship
 dealer in the village named Shady Dan is selling modified Patrol ID cards.
 Liaison Officer Bumblewitz is investigating.">)
 	       (<EQUAL? ,LOG-COUNTER 4>
 		<TELL
-"11349.12.3.1900: Professor Schmidt has back-plotted the course of the alien
+"3.1900: Professor Schmidt has back-plotted the course of the alien
 vessel. There are no star systems along the course; he theorizes that it may
 be of extra-galactic origin.">)
 	       (<EQUAL? ,LOG-COUNTER 5>
 		<TELL
-"11349.12.3.5100: No cooperation from Shady Dan, so I'm putting the
+"3.5100: No cooperation from Shady Dan, so I'm putting the
 village off-limits to station personnel. No more village entry forms
 will be validated.">)
 	       (<EQUAL? ,LOG-COUNTER 6>
 		<TELL
-"11349.12.3.5250: Some kripping joker snuck into my office and validated a
+"3.5250: Some kripping joker snuck into my office and validated a
 whole batch of village entry forms! I won't take that kind of trot aboard my
 station! I'll hide the stamp under my bed until I find out who's responsible.
 Also, I gave Schmidt permission to move the alien pyramid to the "
@@ -863,28 +835,28 @@ too brittle to move, they say. Hmmm... This " 'LOG-READER " is overheating.
 I'll have to dig out the spare.">)
 	       (<EQUAL? ,LOG-COUNTER 7>
 		<TELL
-"11349.12.3.7700: Equipment Officer Mertzhoffer informs me that there have
+"3.7700: Equipment Officer Mertzhoffer informs me that there have
 been several unexplainable breakdowns in the Gymnastic Equipment and the
 Laundering Machinery. All very simple equipment; could it be sabotage?
 If so, how? Who? Why?">)
 	       (<EQUAL? ,LOG-COUNTER 8>
 		<TELL
-"11349.12.4.1650: Emergency communication from the SPS Duffy. They are
+"4.1650: Emergency communication from the S.P.S. Duffy. They are
 critically low on " ,FORM-NAME ", and are sending someone over to pick up a
 truckload of them. Reproductions Officer Hausberg says that the #22 collater
 should be available to prepare the forms.">)
 	       (<EQUAL? ,LOG-COUNTER 9>
 		<TELL
-"11349.12.4.1850: Hausberg reports an unexpected shutdown of web-feeder #17.
+"4.1850: Hausberg reports an unexpected shutdown of web-feeder #17.
 No apparent reason for the shutdown, and no warning, either. He says that one
 of his personnel almost lost an arm when it shut down. We may have to halt the
 entire plant to investigate. No telling how long... What the... Trot! Now the
 spare " 'LOG-READER " is overheating, also!">)
 	       (T
 		<TELL
-"11349.12.4.1900: One of the ensigns in the filing division was seriously
-injured when one of the " 'WELDER "s malfunctioned. She's in Sick Bay now,
-Doc says she should pull through. I've been in space for thirty-two years and
+"4.1900: One of the ensigns in the filing division was seriously
+injured when one of the " 'WELDER "s malfunctioned. She's in Sick Bay now;
+Doc says she should pull through. I've been in space for 32 years and
 I've never heard of a " 'WELDER " malfun... What the krip!...">)>
 	 <TELL "\"">
 	 <COND (<NOT <EQUAL? ,LOG-COUNTER 10>>
@@ -893,28 +865,7 @@ I've never heard of a " 'WELDER " malfun... What the krip!...">)>
 \"More,\" and the red button on the reader lights up.">)>
 	 <CRLF>>
 
-<ROUTINE I-LOG-READER ()
-	 <SETG LOG-READER-COUNTER <+ ,LOG-READER-COUNTER 1>>
-	 <COND (<NOT <FSET? ,LOG-READER ,ACTIVEBIT>>
-		<DEQUEUE I-LOG-READER>
-		<SETG LOG-READER-COUNTER 0>)
-	       (<AND <EQUAL? ,LOG-READER-COUNTER 12>
-		     <EQUAL? ,HERE ,COMMANDERS-OFFICE>>
-		<TELL "   The reader begins producing a whining noise." CR>)
-	       (<AND <EQUAL? ,LOG-READER-COUNTER 13>
-		     <EQUAL? ,HERE ,COMMANDERS-OFFICE>>
-		<TELL
-"   The whine from the " 'LOG-READER " rises in pitch, and grows louder
-by the millichron!" CR>)
-	       (<EQUAL? ,LOG-READER-COUNTER 14>
-		<REMOVE ,LOG-READER>
-		<DEQUEUE I-LOG-READER>
-		<FCLEAR ,COMMANDERS-OFFICE ,TOUCHBIT>
-		<COND (<EQUAL? ,HERE ,COMMANDERS-OFFICE>
-		       <JIGS-UP "   The log reader explodes!">)
-		      (<EQUAL? ,HERE ,COMMANDERS-QUARTERS ,BRIEFING-ROOM
-			       	     ,STATION-CONTROL ,SOUTH-JUNCTION>
-		       <TELL "   You hear an explosion from nearby." CR>)>)>>
+;"routine I-LOG-READER moved to INTERRUPTS file"
 
 <ROOM COMMANDERS-QUARTERS
       (IN ROOMS)
@@ -944,7 +895,7 @@ The only exit is west.")
 	       (<VERB? EXAMINE>
 		<TELL "The dial is set to " N ,DIAL-SETTING ,PERIOD-CR>)>>
 
-<GLOBAL DIAL-SETTING 0>
+<GLOBAL DIAL-SETTING 4473>
 
 <OBJECT LOG-TAPE
 	(IN COMMANDERS-QUARTERS)
@@ -1024,6 +975,7 @@ in the combination">
 		      (<EQUAL? ,HERE ,DOME>
 		       <TELL
 "As the explosive touches the warm bin, it " ,SUBLIMES-INTO-FREZONE>
+		       <DEQUEUE I-EXPLOSIVE-MELT>
 		       <REMOVE-CAREFULLY ,EXPLOSIVE>
 		       <CRLF>)
 		      (<AND <NOT ,SAFE-HOLE-SCORE>
@@ -1033,9 +985,11 @@ in the combination">
 		       <SETG SAFE-HOLE-SCORE T>
 		       <RFALSE>)>)
 	       (<VERB? DRILL>
-		<PERFORM-PRSA .OBJ>)
+		<PERFORM, PRSA .OBJ>
+		<RTRUE>)
 	       (<VERB? SHOOT>
-		<PERFORM-PRSA .OBJ ,ZAPGUN>)
+		<PERFORM, PRSA .OBJ ,ZAPGUN>
+		<RTRUE>)
 	       (<VERB? LOOK-INSIDE>
 		<TELL ,ONLY-BLACKNESS>)>>
 
@@ -1072,6 +1026,7 @@ in the combination">
 	(DESC "key")
 	(SYNONYM KEY)
 	(FLAGS TAKEBIT)
+	(SIZE 3)
 	(VALUE 7)>
 
 <OBJECT VALIDATION-STAMP
@@ -1118,7 +1073,14 @@ station with no Military Sub-Module. Exit: south.")
 	(SYNONYM GUN ZAPGUN)
 	(ADJECTIVE FUSOR BEAM)
 	(SIZE 15)
-	(FLAGS TAKEBIT)>
+	(FLAGS TAKEBIT)
+	(ACTION ZAPGUN-F)>
+
+<ROUTINE ZAPGUN-F ()
+	 <COND (<VERB? EXAMINE>
+		<TELL
+"The zapgun is a nasty-looking weapon. Mounted near its ugly maw is an
+indicator which reads \"" N ,ZAPGUN-SHOTS ".\"" CR>)>>
 
 <ROOM SOUTH-CONNECTION
       (IN ROOMS)
@@ -1145,7 +1107,8 @@ tube for a Diplomatic Sub-Module">)
 		      (T
 		       <TELL "closed">)>
 		<TELL
-". There's a slot next to the hatch. Other doors lead east and west.">)>>
+". There's a slot next to the hatch. Other doors lead east and west,
+and a junction with another corridor is visible to the north.">)>>
 
 <ROOM LEVEL-FOUR
       (IN ROOMS)
@@ -1185,11 +1148,11 @@ to the east.")
 <OBJECT LILAC-SPOOL
 	(IN DOCKING-BAY-3)
 	(DESC "lilac nanofilm spool")
-	(SYNONYM NANOFILM SPOOL)
+	(SYNONYM NANOFILM SPOOL SPOOLS)
 	(ADJECTIVE NANOFILM LILAC)
 	(FLAGS TAKEBIT READBIT)
 	(SIZE 3)
-	(TEXT "\"Spacetruck Refueling Instructions")>
+	(TEXT "\"Spacetruck Refueling Instructions\"")>
 
 <ROOM FEMALE-BARRACKS
       (IN ROOMS)
@@ -1288,11 +1251,13 @@ gym. There is a sign above it.")
 <ROUTINE EXERCISE-MACHINE-F (OARG)
 	 <COND (.OARG
 		<RFALSE>)
-	       (<AND <VERB? ENTER>
-		     <RUNNING? ,I-EXERCISE-MACHINE>>
-		<TELL "The " 'EXERCISE-MACHINE>
-		<JIGS-UP
+	       (<VERB? ENTER>
+		<COND (<RUNNING? ,I-EXERCISE-MACHINE>
+		       <TELL "The " 'EXERCISE-MACHINE>
+		       <JIGS-UP
 " hums encouraging platitudes as it exercises you to death.">)
+		      (<EQUAL? ,HERE ,COMPUTER-CONTROL>
+		       <TELL "The forklift is in the way." CR>)>)
 	       (<VERB? ON OFF>
 		<TELL "It's permanently on." CR>)
 	       (<AND <VERB? EXAMINE>
@@ -1320,8 +1285,9 @@ gym. There is a sign above it.")
 	 <COND (<EQUAL? .RARG ,M-LOOK>
 		<TELL
 "All laundry rooms, planetside as well as in space, tend to look alike.
-This one is no exception. ">
+This one is no exception.">
 		<COND (<FSET? ,DRYER ,ACTIVEBIT>
+		       <TELL " ">
 		       <DESCRIBE-DRYER-HEAT>)>
 		<TELL " The door lies on the east side.">)
 	       (<AND <EQUAL? .RARG ,M-ENTER>
@@ -1363,7 +1329,13 @@ all mismatched." CR>)
 		<SETG DRYER-COUNTER 0>
 		<TELL
 "With the dryer off, the station's ventilation system quickly returns the
-room to a comfy twenty-three degrees centigrade." CR>)
+room to a comfy twenty-three degrees Celsius." CR>)
+	       (<AND <VERB? OPEN>
+		     <FSET? ,DRYER ,ACTIVEBIT>>
+		<TELL "Opening the dryer automatically shuts it off. ">
+		<FSET ,DRYER ,OPENBIT>
+		<PERFORM ,V?OFF ,DRYER>
+		<RTRUE>)
 	       (<VERB? SHOOT>
 		<FCLEAR ,DRYER ,ACTIVEBIT>
 		<DEQUEUE I-DRYER>
@@ -1372,14 +1344,7 @@ room to a comfy twenty-three degrees centigrade." CR>)
 
 <GLOBAL DRYER-COUNTER 0>
 
-<ROUTINE I-DRYER ()
-	 <SETG DRYER-COUNTER <+ ,DRYER-COUNTER 1>>
-	 <FCLEAR ,LAUNDRY ,TOUCHBIT>
-	 <COND (<AND <EQUAL? ,HERE ,LAUNDRY>
-		     <EQUAL? ,DRYER-COUNTER 5 10 15>>
-		<TELL "   ">
-		<DESCRIBE-DRYER-HEAT>
-		<CRLF>)>>
+;"routine I-DRYER moved to INTERRUPTS file"
 
 <ROUTINE DESCRIBE-DRYER-HEAT ()
 	 <COND (<G? ,DRYER-COUNTER 14>
@@ -1487,8 +1452,11 @@ decide whether it sounds more like a chuckle or a burp.">)
 <ROUTINE CHAPEL-F (RARG)
 	 <COND (<EQUAL? .RARG ,M-LOOK>
 		<TELL
-"This is a modest, nondenominational chapel. Hanging high above the
-beautiful wooden pulpit ">
+"This is a modest, nondenominational chapel. Hanging high above the ">
+		<COND (<IN? ,PULPIT ,HERE>
+		       <TELL "beautiful wooden pulpit ">)
+		      (T
+		       <TELL "floor ">)>
 		<COND (<NOT <FSET? ,STAR ,TOUCHBIT>>
 		       <TELL "are the two">)
 		      (T
@@ -1498,7 +1466,9 @@ beautiful wooden pulpit ">
 		<COND (<NOT <FSET? ,STAR ,TOUCHBIT>>
 		       <TELL " and a " 'STAR>)>
 		<TELL ". ">
-		<COND (<NOT <FSET? ,ETERNAL-FLAME ,ONBIT>>
+		<COND (<FSET? ,ETERNAL-FLAME ,ONBIT>
+		       <TELL "The flame flickers in the air currents. ">)
+		      (T
 		       <TELL ,FLAME-EXTINGUISHED " ">)>
 		<TELL "A doorway occupies the center of the east wall.">
 		<COND (<NOT <FSET? ,STAR ,TOUCHBIT>>
@@ -1508,11 +1478,11 @@ beautiful wooden pulpit ">
 <OBJECT PUCE-SPOOL
 	(IN CHAPEL)
 	(DESC "puce nanofilm spool")
-	(SYNONYM NANOFILM SPOOL)
+	(SYNONYM NANOFILM SPOOL SPOOLS)
 	(ADJECTIVE NANOFILM PUCE)
 	(FLAGS TAKEBIT READBIT)
 	(SIZE 3)
-	(TEXT "\"Chapel Maintenance Procedures")>
+	(TEXT "\"Chapel Maintenance Procedures\"")>
 
 <OBJECT STAR
 	(IN CHAPEL)
@@ -1520,6 +1490,7 @@ beautiful wooden pulpit ">
 	(SYNONYM STAR)
 	(ADJECTIVE SEVEN POINTED)
 	(FLAGS NDESCBIT TRYTAKEBIT TAKEBIT CONTBIT SEARCHBIT)
+	(SIZE 8)
 	(ACTION STAR-F)>
 
 <ROUTINE STAR-F ()
@@ -1568,7 +1539,6 @@ Suddenly the diode bursts and the star goes dead." CR>)>>
 "I'm really not at all mechanically inclined. My sincerest apologies.")
 	(FLOYD-ASK-ABOUT
 "It's a kind of a thingamabob for connecting a, you know, a whosiwhatsis.")
-	(SIZE 5)
 	(VALUE 7) ;"in case you take diode M without ever taking star"
 	(FLAGS VOWELBIT TAKEBIT)>
 
@@ -1599,7 +1569,8 @@ Ernie DaCosta, for the Sierra Vista Monastery on Bulbus VII." CR>)
 	       (<AND <TOUCHING? ,ETERNAL-FLAME>
 		     <NOT ,HANGING-IN-AIR>>
 		<CANT-REACH ,ETERNAL-FLAME>)
-	       (<VERB? SHOOT>
+	       (<AND <VERB? SHOOT>
+		     <FSET? ,ETERNAL-FLAME ,ONBIT>>
 		<TELL
 "Perhaps that made the flame hotter; there was really no way to tell." CR>)>>
 
@@ -1617,7 +1588,7 @@ Ernie DaCosta, for the Sierra Vista Monastery on Bulbus VII." CR>)
 		<COND (,HANGING-IN-AIR
 		       <CANT-REACH ,PULPIT>)
 		      (T
-		       <TELL "The pulpit sways and you fall off.">
+		       <TELL "The pulpit sways, and you fall off.">
 		       <COND (<NOT <FSET? ,PULPIT ,TOUCHBIT>>
 			      <TELL " However, it wasn't a wasted effort: ">
 			      <PERFORM ,V?EXAMINE ,PULPIT>
@@ -1674,7 +1645,8 @@ only exit is to the north.")
       (FLAGS RLANDBIT ONBIT NWELDERBIT)
       (GLOBAL AUTO-DOOR)
       (THINGS <PSEUDO (<> SEAT THEATRE-SEAT-F)
-		      (PROJECTION BOOTH PROJECTION-BOOTH-F)>)>
+		      (PROJECTION BOOTH PROJECTION-BOOTH-F)
+		      (<> LOCK BRIG-LOCK-F)>)>
 
 <ROUTINE THEATRE-SEAT-F ()
 	 <COND (<VERB? ENTER CLIMB-ON>
@@ -1682,8 +1654,10 @@ only exit is to the north.")
 		<V-SIT>)>>
 
 <ROUTINE PROJECTION-BOOTH-F ()
-	 <COND (<VERB? OPEN LOOK-INSIDE ENTER WALK-TO SEARCH>
-		<TELL "The projection booth is closed and locked." CR>)>>
+	 <COND (<VERB? OPEN ENTER WALK-TO SEARCH>
+		<TELL "The projection booth is closed and locked." CR>)
+	       (<VERB? LOOK-INSIDE>
+		<TELL ,ONLY-BLACKNESS>)>>
 
 <ROOM MESS-HALL
       (IN ROOMS)
@@ -1703,7 +1677,7 @@ only exit is to the north.")
 <ROUTINE MESS-HALL-F (RARG)
 	 <COND (<EQUAL? .RARG ,M-LOOK>
 		<TELL
-"This open dining area seats around thirty people. " D ,FPU "s curve along the
+"This open dining area seats around 30 people. " D ,FPU "s curve along the
 exterior wall. There's a doorway to the southeast, and doors lead north, south,
 and northeast. To the east are the elevator">
 		<COND (<NOT <EQUAL? ,ELEVATOR-LEVEL 2>>
@@ -1713,7 +1687,7 @@ and northeast. To the east are the elevator">
 <OBJECT FPU
 	(IN MESS-HALL)
 	(DESC "Food Processing and Dispensing Unit")
-	(SYNONYM UNIT FPU FDU)
+	(SYNONYM UNIT FPU FDU DISPEN)
 	(ADJECTIVE FOOD PROCESSING DISPEN)
 	(FLAGS NDESCBIT)
 	(ACTION FPU-F)>
@@ -1743,9 +1717,9 @@ a tasty and nutritionally-balanced meal." CR>)
 		       <TELL
 "a bacon, lettuce, and frombucko sandwich">)>
 		<TELL
-". Eat hearty! Dispensing will now begin.\" A seamless hatch in the dispenser
-opens, and a stream of acid shoots out. You leap aside as the acid etches the
-floor before evaporating, leaving behind some acrid fumes." CR>)>>
+". Eat hearty! Dispensing will now begin.\" A seamless hatch in the FDU opens,
+and a stream of acid shoots out. You leap aside as the acid etches the floor,
+leaving behind some acrid fumes." CR>)>>
 
 <OBJECT COFFEE
 	(IN MESS-HALL)
@@ -1770,16 +1744,20 @@ floor before evaporating, leaving behind some acrid fumes." CR>)>>
 		<TELL ".">)
 	       (<AND <VERB? POUR EMPTY THROW>
 		     <PRSO? ,COFFEE>>
-		<TELL
-"Shuddering at the memories of your deck-scrubbing days, you realize
-what a mess that would make." CR>)
-	       (<AND <VERB? TASTE EXAMINE TOUCH>
+		<MESS "coffee">
+		<ANTI-LITTER ,COFFEE>)
+	       (<AND <VERB? TASTE EXAMINE TOUCH REACH-IN LOOK-INSIDE>
 		     <EQUAL? ,DAY 1>>
-		<TELL "It's still hot." CR>)
+		<TELL "The coffee is still hot." CR>)
 	       (<VERB? TASTE>
 		<TELL "It tastes unusually bitter." CR>)
 	       (<VERB? SMELL>
 		<TELL "The coffee has a vague chemical odor." CR>)
+	       (<VERB? EXAMINE LOOK-INSIDE REACH-IN TOUCH>
+		<TELL "The cup is filled with cold coffee." CR>)
+	       (<VERB? EAT-FROM>
+		<PERFORM ,V?EAT ,COFFEE>
+		<RTRUE>)
 	       (<VERB? EAT>
 		<COND (<EQUAL? ,HUNGER-LEVEL 0>
 		       <TELL ,NOT-HUNGRY>)
@@ -1808,6 +1786,7 @@ northwestern and southwestern ends.")
 	(DESC "detonator")
 	(SYNONYM DETONATOR)
 	(FLAGS TAKEBIT CONTBIT SEARCHBIT)
+	(SIZE 10)
 	(ACTION DETONATOR-F)>
 
 <GLOBAL TIMER-CONNECTED <>>
@@ -1945,9 +1924,9 @@ with char." CR>)>>
       (LDESC
 "This station's library has some printed material, such as recently transmitted
 magazines, but primarily it is a location for reading nanofilm spools, using
-the spool reader, and accessing the main computer's data banks via a computer
-terminal. Strangely, the computer terminal has been removed from the room.
-There's a door to the north and an exit to the west.")
+the spool reader here, and for accessing the main computer's data banks via a
+computer terminal. Strangely, the computer terminal has been removed. There's
+a door to the north and an exit to the west.")
       (NORTH TO MEETING-ROOM-2 IF P-WON)
       (WEST TO MESS-HALL)
       (FLAGS RLANDBIT ONBIT)
@@ -1975,7 +1954,7 @@ so they're not too interesting." CR>)>>
 	(IN LIBRARY)
 	(DESC "nanofilm reader")
 	(SYNONYM READER)
-	(ADJECTIVE NANOFILM SPOOL)
+	(ADJECTIVE NANOFILM SPOOL SPOOLS)
 	(FLAGS NDESCBIT LIGHTBIT CONTBIT OPENBIT SEARCHBIT)
 	(ACTION NANOFILM-READER-F)>
 
@@ -2014,7 +1993,7 @@ screen. The reader is o">
 		<TELL "The reader, in a surprisingly human voice, says, \"">
 		<COND (<EQUAL? .SPOOL ,MAUVE-SPOOL>
 		       <TELL
-"Gamma-Delta-Gamma class Deep Space Stations are equipped with a full
+"Gamma-Delta-Gamma class Deep-Space Stations are equipped with a full
 range of collating machinery. The workhorse of the...\" There is a burst
 of static from the reader. \"...common malfunction of this large collater.
 First check the lower fromitz...\" More static. \"...and replace with">)
@@ -2147,6 +2126,7 @@ dogwoods, gliffgubbers, Rhomboidal Pellet Trees..." CR>)
 		<DEQUEUE I-HUNGER-WARNINGS>
 		<ROB ,PROTAGONIST ,HERE>
 		<REMOVE ,HOUSING>
+		<MOVE-FLOYD-TO-FACTORY> ;"in case he isn't already there"
 		<TELL
 "You open the bin, revealing fertilizer, gardening tools, and a supply of
 fuel cells. Suddenly, the cells explode! The heat and shock toss you halfway
@@ -2181,12 +2161,15 @@ and look around" ,ELLIPSIS>
 	(SYNONYM GRATING GRATE COVER SHAFT)
 	(ADJECTIVE LARGE AIR SHAFT)
 	(FLAGS NDESCBIT VOWELBIT)
+	(GENERIC GENERIC-SHAFT-F)
 	(ACTION GRATING-F)>
 
 <ROUTINE GRATING-F ()
 	 <COND (<AND <EQUAL? ,HERE ,COMPUTER-CONTROL>
 		     <TOUCHING? ,GRATING>>
 		<CANT-REACH ,GRATING>)
+	       (<VERB? PUT>
+		<WASTES>)
 	       (<EQUAL? ,HERE ,BOTTOM-OF-AIR-SHAFT>
 		<COND (<VERB? OPEN KICK STAND-ON>
 		       <QUEUE I-ANNOUNCEMENT 1>
@@ -2199,7 +2182,10 @@ and look around" ,ELLIPSIS>
 		       <MOVE ,PYRAMID ,PEDESTAL>
 		       <GOTO ,COMPUTER-CONTROL>)
 		      (<VERB? ENTER>
-		       <DO-FIRST "open the grating">)>)
+		       <DO-FIRST "open the grating">)
+		      (<VERB? LOOK-INSIDE>
+		       <TELL
+"There's a lighted area below the grating, but you can't see any details." CR>)>)
 	       (<VERB? EXAMINE>
 		<COND (<FSET? ,GRATING ,TOUCHBIT>
 		       <TELL
@@ -2257,7 +2243,7 @@ large enough to enter." CR>)
 		       <TELL " shaft">)>
 		<TELL
 ". This main corridor continues around the shaft to the southeast. Huge doors
-lie just northwest and southwest of here, smaller doors lead north and south"
+lie just northwest and southwest of here; smaller doors lead north and south"
 ,LADDER-LEADS>)>>
 
 <ROOM AUXILIARY-BARRACKS
@@ -2300,7 +2286,8 @@ open hatch seems to beckon you inward.")
       (FLAGS RLANDBIT ONBIT NWELDERBIT)
       (GLOBAL AUTO-DOOR)
       (THINGS <PSEUDO (ALIEN SHIP ALIEN-SHIP-PSEUDO-F)
-		      (SPACE SHIP ALIEN-SHIP-PSEUDO-F)>)>
+		      (SPACE SHIP ALIEN-SHIP-PSEUDO-F)
+		      (<> HATCH ALIEN-HATCH-F)>)>
 
 <ROUTINE ALIEN-SHIP-PSEUDO-F ()
 	 <COND (<VERB? ENTER>
@@ -2325,13 +2312,20 @@ your skin crawl." CR>)>)
 		       <PERFORM ,V?SEARCH ,GLOBAL-ROOM>
 		       <RTRUE>)>)>>
 
+<ROUTINE ALIEN-HATCH-F ()
+	 <COND (<VERB? OPEN>
+		<TELL "It is!" CR>)
+	       (<VERB? CLOSE>
+		<TELL ,WONT-BUDGE>)>>
+
 <ROOM ALIEN-SHIP
       (IN ROOMS)
       (DESC "Alien Ship")
       (OUT TO DOCKING-BAY-1)
       (FLAGS RLANDBIT ONBIT NWELDERBIT)
       (ACTION ALIEN-SHIP-F)
-      (THINGS <PSEUDO (ALIEN SHIP ALIEN-SHIP-PSEUDO-F)
+      (THINGS <PSEUDO (<> HATCH ALIEN-HATCH-F)
+		      (ALIEN SHIP ALIEN-SHIP-PSEUDO-F)
 		      (SPACE SHIP ALIEN-SHIP-PSEUDO-F)>)>
 
 <ROUTINE ALIEN-SHIP-F (RARG)
@@ -2356,6 +2350,8 @@ hatch leading out.">)
 		<TELL
 "   Floyd notices the skeleton, and some of the color drains out of
 his face plates. \"Floyd scared,\" he whimpers." CR>)>>
+
+<GLOBAL PILOT-SEAT-COMMENT <>>
 
 <GLOBAL OSTRICH-COMMENT <>>
 
@@ -2460,11 +2456,11 @@ to the east.")
       (IN ROOMS)
       (DESC "End of Corridor")
       (LDESC
-"The corridor, which widens off to the west, ends here. There are doorways
-north and east of you, and doors to the south and southwest. The door to the
-north must be a security door, because there's an ID reader next to it.")
+"The corridor, which widens off to the west, ends here. Doors lie to the east,
+north, south, and southwest. The door to the north must be a security door,
+because there's an ID reader next to it.")
       (NORTH TO ARMORY IF SECURITY-DOOR IS OPEN)
-      (EAST TO SHIPPING-ROOM)
+      (EAST TO SHIPPING-ROOM IF P-WON)
       (SOUTH TO OFFICERS-QUARTERS-C IF P-WON)
       (SW TO OFFICERS-QUARTERS-B IF P-WON)
       (WEST TO LEVEL-SIX)
@@ -2494,6 +2490,7 @@ and unused robots are stored. There's a door to the east.")
 		     <NOT <RUNNING? ,I-PLATO-ATTACK>>>
 		<SETG OLIVER-SPEECH T>
 		<SETG FLOYD-SPOKE T>
+		<FSET ,OLIVER ,TOUCHBIT>
 		<TELL
 "   Floyd bounces over and peers down at the unconscious robot. \"Oliver is
 a nice name. I hope Floyd will be around when Oliver wakes up.\" He looks over
@@ -2513,8 +2510,8 @@ Floyd look. \"" <GETP ,OLIVER ,P?FLOYD-ASK-ABOUT> "\"" CR>)>>
 <ROUTINE HEATING-CHAMBER-F ()
 	 <COND (<VERB? EXAMINE>
 		<TELL
-"The " 'HEATING-CHAMBER " is a device which cleans or sterilizes small tools
-and equipment. There's a small opening for placing items in the chamber." CR>)
+"The " 'HEATING-CHAMBER " cleans or sterilizes small tools and equipment.
+There's a small opening for placing items in the chamber." CR>)
 	       (<VERB? OPEN CLOSE>
 		<TELL ,HUH>)
 	       (<VERB? ON OFF>
@@ -2536,7 +2533,7 @@ the opening is too small for a normal human hand to pass through." CR>)
 	(SYNONYM BIT BITS)
 	(ADJECTIVE MEDIUM DRILL)
 	(FLAGS TAKEBIT TRYTAKEBIT)
-	(SIZE 4)
+	(SIZE 3)
 	(VALUE 3)
 	(ACTION BIT-F)>
 
@@ -2544,7 +2541,12 @@ the opening is too small for a normal human hand to pass through." CR>)
 	 <COND (<VERB? EXAMINE MEASURE>
 		<TELL "The bit is">
 		<DESCRIBE-BIT-SIZE ,PRSO>
-		<TELL ,PERIOD-CR>)>>
+		<TELL ,PERIOD-CR>)
+	       (<AND <VERB? SET>
+		     <EQUAL? ,P-PRSA-WORD ,W?SWITCH>>
+		<TELL
+"To switch bits, remove the bit in the drill, then put another bit
+into the drill." CR>)>>
 
 <OBJECT OLIVER
 	(IN ROBOT-SHOP)
@@ -2557,6 +2559,7 @@ from your old robotics text drifts through your mind: \"The incubation period
 between the training and 'birth' of a robot is two to twenty days, depending
 on the complexity of the model.\" This particular model has the name
 \"Oliver\" engraved on its chestplate.")
+	(LDESC "A little \"sleeping\" robot named \"Oliver\" is lying here.")
 	(SYNONYM OLIVER ROBOT)
 	(ADJECTIVE SMALL YOUNG)
 	(FLAGS NARTICLEBIT VOWELBIT)
@@ -2579,7 +2582,8 @@ the older robots. Such is our lot.")
 		<TELL
 "That won't be possible until his incubation period ends." CR>)
 	       (<VERB? ON OFF OPEN>
-		<PERFORM-PRSA ,PLATO>)
+		<PERFORM, PRSA ,PLATO>
+		<RTRUE>)
 	       (<VERB? SHOOT>
 		<COND (<OR <IN? ,FLOYD ,FACTORY>
 			   <NOT <FSET? ,FLOYD ,ACTIVEBIT>>>
@@ -2677,7 +2681,7 @@ the regular fixtures. Exits lead north, northeast, and northwest.")
       (EAST PER ELEVATOR-ENTER-F)
       (UP TO LEVEL-SIX)
       (DOWN
-"Partway down, you discover that the ladder passage to Level Eight
+"A few rungs down, you discover that the ladder passage to Level Eight
 is sealed off -- apparently from below.")
       (LEVEL 7)
       (FLAGS RLANDBIT ONBIT)
@@ -2702,7 +2706,7 @@ northwest. The elevator ">
 <OBJECT MAUVE-SPOOL
 	(IN PRINTING-PLANT)
 	(DESC "mauve nanofilm spool")
-	(SYNONYM NANOFILM SPOOL)
+	(SYNONYM NANOFILM SPOOL SPOOLS)
 	(ADJECTIVE NANOFILM MAUVE)
 	(FLAGS TAKEBIT READBIT)
 	(SIZE 3)
@@ -2714,9 +2718,9 @@ northwest. The elevator ">
 	(SYNONYM CAN PAIL)
 	(ADJECTIVE TRASH GARBAGE)
 	(FLAGS TAKEBIT CONTBIT SEARCHBIT)
-	(SIZE 30)
+	(SIZE 25)
 	(GENERIC GENERIC-CAN-F)
-	(CAPACITY 50)
+	(CAPACITY 40)
 	(ACTION TRASH-CAN-F)>
 
 <ROUTINE TRASH-CAN-F ()
@@ -2730,7 +2734,7 @@ northwest. The elevator ">
 	(SYNONYM FORM FORMS FW-83-Q)
 	(ADJECTIVE CRUMPL ILLEGAL SPACE VILLAGE ENTRY FORM)
 	(FLAGS TAKEBIT READBIT)
-	(SIZE 2)
+	(SIZE 1)
 	(ACTION VILLAGE-FORM-F)>
 
 <OBJECT VILLAGE-FORM
@@ -2738,7 +2742,7 @@ northwest. The elevator ">
 	(SYNONYM FORM FORMS FW-83-Q)
 	(ADJECTIVE ILLEGAL SPACE VILLAGE ENTRY FORM NEATLY IRONED)
 	(FLAGS TAKEBIT READBIT)
-	(SIZE 2)
+	(SIZE 1)
 	(ACTION VILLAGE-FORM-F)>
 
 <GLOBAL VILLAGE-FORM-VALIDATED <>>
@@ -2808,6 +2812,7 @@ rational terms, it is gone">)>
 in this room, because they left a drill lying around.")
 	(SYNONYM DRILL)
 	(FLAGS TAKEBIT CONTBIT SEARCHBIT OPENBIT)
+	(SIZE 15)
 	(ACTION DRILL-F)>
 
 <ROUTINE DRILL-F ()
@@ -2848,7 +2853,7 @@ in this room, because they left a drill lying around.")
 "I'm really not at all mechanically inclined. My sincerest apologies.")
 	(FLOYD-ASK-ABOUT
 "It's a kind of a thingamabob for connecting a, you know, a whosiwhatsis.")
-	(SIZE 4)
+	(SIZE 2)
 	(ACTION BIT-F)>
 
 ;"the elevator"
@@ -2894,7 +2899,11 @@ in this room, because they left a drill lying around.")
 	(SYNONYM SHAFT)
 	(ADJECTIVE ELEVATOR)
 	(FLAGS VOWELBIT)
+	(GENERIC GENERIC-SHAFT-F)
 	(ACTION ELEVATOR-OBJECT-F) ;"share elevator's routine, if it works">
+
+<ROUTINE GENERIC-SHAFT-F ()
+	 ,ELEVATOR-SHAFT>
 
 <GLOBAL ELEVATOR-LEVEL 2>
 
@@ -3044,8 +3053,8 @@ card in the door's ID reader." CR>)>)
 <OBJECT ID-READER
 	(IN LOCAL-GLOBALS)
 	(DESC "ID reader")
-	(SYNONYM READER)
-	(ADJECTIVE ID)
+	(SYNONYM READER BOX)
+	(ADJECTIVE FEATURELESS BLACK ID)
 	(FLAGS VOWELBIT)
 	(ACTION ID-READER-F)>
 
@@ -3124,6 +3133,7 @@ pal, the mayor, will get to show off his linguistic training.\"|
    Finally, Schmidt began concentrating his studies on the pyramid itself.
 He was able to discover very little, blaming this primarily on the unexplained
 failures of several crucial pieces of lab machinery.")
+	(SIZE 8)
 	(ACTION DIARY-F)>
 
 <ROUTINE DIARY-F ()
@@ -3138,7 +3148,7 @@ failures of several crucial pieces of lab machinery.")
       (DESC "Astro Lab")
       (LDESC
 "This laboratory conducts research into various space-related physical
-sciences. Gangways lead up and down, a there's a door to the north.")
+sciences. Gangways lead up and down, and there's a door to the north.")
       (NORTH TO ASTRO-OFFICE)
       (UP TO SCIENTISTS-QUARTERS)
       (DOWN TO ENGINEERING-LAB)
@@ -3148,7 +3158,7 @@ sciences. Gangways lead up and down, a there's a door to the north.")
 	(IN ASTRO-LAB)
 	(DESC "twenty-prong fromitz board")
 	(SYNONYM BOARD BOARDS PRONGS)
-	(ADJECTIVE TWENTY PRONG 20-PRONG FROMITZ NUMBER)
+	(ADJECTIVE TWENTY PRONG PRONGED 20-PRONG FROMITZ NUMBER)
 	(FLAGS TAKEBIT)	
 	(PLATO-ASK-ABOUT
 "I'm really not at all mechanically inclined. My sincerest apologies.")
@@ -3166,6 +3176,9 @@ sciences. Gangways lead up and down, a there's a door to the north.")
 	       (<AND <VERB? COUNT>
 		     <NOUN-USED ,W?PRONGS ,TWENTY-PRONG-FROMITZ-BOARD>>
 		<TELL "20." CR>)
+	       (<AND <VERB? COMPARE>
+		     <EQUAL? ,TWELVE-PRONG-FROMITZ-BOARD ,PRSO ,PRSI>>
+		<TELL "Besides the number of prongs, they're identical." CR>)
 	       (<AND <VERB? DISCONNECT>
 		     <OR <PRSI? ,JAMMER>
 			 <NOT ,PRSI>>
@@ -3180,7 +3193,7 @@ sciences. Gangways lead up and down, a there's a door to the north.")
 
 <ROUTINE N-PRONG-BOARD ()
 	 <SETG P-WON <>>
-	 <TELL "[You can't see any " N ,P-NUMBER "-prong board here!]" CR>>
+	 <TELL ,YOU-CANT "see any " N ,P-NUMBER "-prong board here!]" CR>>
 
 <ROUTINE GENERIC-FROMITZ-BOARD-F ()
 	 <COND (<EQUAL? ,P-NUMBER 20>
@@ -3204,7 +3217,7 @@ sciences. Gangways lead up and down, a there's a door to the north.")
       (IN ROOMS)
       (DESC "Bio Lab")
       (LDESC
-"Various biological sciences, as they related to the environment of space,
+"Various biological sciences, as they relate to the environment of space,
 are studied in this laboratory. There is a gangway leading up, another leading
 down, and a door leading north.")
       (NORTH TO BIO-OFFICE)
@@ -3228,7 +3241,7 @@ down, and a door leading north.")
 	(FDESC "Lying on one of the desks is a scribbled note.")
 	(SYNONYM NOTE)
 	(FLAGS TAKEBIT READBIT)
-	(SIZE 2)
+	(SIZE 1)
 	(TEXT
 "\"Schmidt -- Why didn't I see it until now! Just think of this station as a
 cell and the pyramid as a mechanized bacterioph\" The note ends at that point;
@@ -3286,7 +3299,7 @@ scheme, but I do keep the library organized.")
 
 <ROUTINE PLATO-F ("AUX" TXT)
 	 <COND (<EQUAL? ,PLATO ,WINNER>
-		<COND (<G? ,PLATO-ATTACK-COUNTER 0>
+		<COND (,STUNNED
 		       <TELL "Plato ignores you." CR>
 		       <STOP>)
 		      (<OR <AND <VERB? GIVE>
@@ -3389,7 +3402,7 @@ unappreciated.\"" CR>)
 		<PERFORM ,V?ASK-ABOUT ,PLATO ,PRSO>
 		<RTRUE>)
 	       (<AND <VERB? LISTEN>
-		     <G? ,PLATO-ATTACK-COUNTER 0>>
+		     ,STUNNED>
 		<TELL "You don't seem to have much choice!" CR>)>>
 
 <GLOBAL PLATO-INTRODUCED <>>
@@ -3407,7 +3420,7 @@ unappreciated.\"" CR>)
 Floyd, wanders in, engrossed in a volume of poetry. He almost runs into you,
 finally notices you, stops dead, and looks quite startled." CR>)>
 		<TELL
-"    \"I am quite surprised to discover you here,\" says the robot. \"I have
+"   \"I am quite surprised to discover you here,\" says the robot. \"I have
 not seen a soul for a day now, perhaps more. But look, here I am forgetting
 my manners again. I am known as Plato to the humans on this station, and I
 am most gratified to make your acquaintance.\"">
@@ -3463,6 +3476,8 @@ of some of the works of the 77th century poet Ignatius Tomato." CR>)>>
 
 <GLOBAL FLOYD-TOLD <>>
 
+<GLOBAL STUNNED <>>
+
 <ROUTINE I-PLATO-ATTACK ("AUX" TEE L (P 0))
 	<QUEUE I-PLATO-ATTACK -1>
 	<COND (<AND <IN? ,PLATO ,HERE>
@@ -3479,11 +3494,16 @@ of some of the works of the 77th century poet Ignatius Tomato." CR>)>>
 	<TELL "   ">
 	<COND (<EQUAL? ,PLATO-ATTACK-COUNTER 1>
 	       <ROB ,PROTAGONIST ,HERE>
+	       <MOVE ,PROTAGONIST ,HERE>
 	       <MOVE ,PLATO ,HERE>
 	       <MOVE ,STUN-GUN ,PLATO>
 	       <MOVE ,FLOYD ,HERE>
+	       <FSET ,FLOYD ,ACTIVEBIT>
+	       <FSET ,FLOYD ,ACTORBIT>
 	       <REMOVE ,VOLUME>
-	       <COND (<FSET? ,HERE ,WEIGHTLESSBIT>
+	       <SETG STUNNED T>
+	       <COND (<OR <FSET? ,HERE ,WEIGHTLESSBIT>
+			  ,HANGING-IN-AIR>
 		      <TELL "Your heart leaps to your throat">)
 		     (T
 	       	      <TELL "You jump half a meter off the floor">)>
@@ -3493,13 +3513,15 @@ merely Plato. But you get somewhat nervous again when you realize that he is
 aiming a stun ray right at your chest!|
    \"In case it isn't apparent,\" Plato is saying, \"your rather pathetic,
 useless life is about to come to an unheralded close.\" He presses the trigger,
-and an instant numbness envelops you. As you crumple ">
+and an instant numbness envelops you. As you ">
+	       <COND (,HANGING-IN-AIR
+		      <SETG HANGING-IN-AIR <>>
+		      <TELL "drop to the deck and ">)>
+	       <TELL "crumple into a ">
 	       <COND (<FSET? ,HERE ,WEIGHTLESSBIT>
-		      <TELL "into a floating heap">)
-		     (T
-		      <TELL "to the floor">)>
+		      <TELL "floating ">)>
 	       <TELL
-", Floyd dashes to your side, his face a mask of concern." CR>
+"heap, Floyd dashes to your side, his face a mask of concern." CR>
 	       <COND (<AND <IN? ,OSTRICH ,HERE>
 			   <FSET? ,OSTRICH ,TOUCHBIT>>
 		      <REPEAT ()
@@ -3523,13 +3545,13 @@ this is fatal. But before I do, human, perhaps it will interest you to discover
 the reason for your demise, and why the rest of your worthless race will soon
 follow.|
    \"You see, eons ago, two races in another galaxy, the Zeenaks and the Hunji,
-were involved in an interstellar war. The war had been going on for countless
-millenia when the Zeenaks devised an ultimate weapon, a device that would be
-launched into Hunji space. There, via methods beyond your comprehension, it
-would influence all the machines within a certain range to turn against
-their Hunji creators.\"|
-   Floyd is now looking back and forth between you and Plato with a look of
-miserable confusion." CR>)
+were involved in an interstellar war. The war had raged for countless millenia
+before the Zeenaks devised an ultimate weapon, a device that would be launched
+into Hunji space. There, via methods beyond your comprehension, it would
+influence all the machines within a certain range to turn against their Hunji
+creators.\"|
+   Floyd's head is swivelling back and forth between you and Plato with a look
+of miserable confusion." CR>)
 	      (<EQUAL? ,PLATO-ATTACK-COUNTER 3>
 	       <TELL
 "\"But the device, which was shaped like a pyramid, did more than that! Once
@@ -3564,6 +3586,7 @@ the trigger. Floyd ">
 		      <QUEUE I-FLOYD -1>
 		      <SETG FLOYD-ANGUISHED T>
 		      <SETG SCORE <+ ,SCORE 7>>
+		      <SETG STUNNED <>>
 		      <TELL
 "suddenly leaps at the gun, knocking it out of Plato's hands! The gun
 skitters across the floor. Plato and Floyd both chase it, but Plato is a
@@ -3571,7 +3594,7 @@ step faster. He leaps on top of it, rupturing the gun's power pack. The
 gun explodes, and Plato is blown apart!|
    Floyd crumples to the deck, shaking all over. Tears of oil stream
 down his face.|
-   Pins and needles begin prickling in your extremeties, and soon
+   Pins and needles begin prickling in your extremities, and soon
 spread all over your body. Within a few seconds, all your muscular
 control has returned." CR>)
 		     (T
@@ -3579,7 +3602,7 @@ control has returned." CR>)
 "burst into tears and dashes out of the room. A beam
 leaps from the gun...">)>)>>
 
-<ROUTINE STUNNED ("OPTIONAL" (STRING <>))
+<ROUTINE YOURE-STUNNED ("OPTIONAL" (STRING <>))
 	 <TELL "You can barely twitch your pinky">
 	 <COND (.STRING
 		<TELL ", let alone " .STRING>)>
@@ -3636,9 +3659,11 @@ leaps from the gun...">)>)>>
 <GLOBAL ANNOUNCEMENT-COUNTER 0>
 
 <ROUTINE I-ANNOUNCEMENT ()
+	 <COND (<EQUAL? ,ANNOUNCEMENT-COUNTER 2>
+		<RFALSE>)>
 	 <SETG ANNOUNCEMENT-COUNTER <+ ,ANNOUNCEMENT-COUNTER 1>>
 	 <TELL
-"   A flat, emotionless voice booms over the station's PA system.
+"   A flat, emotionless voice booms over the station's P.A. system.
 \"Announcement. ">
 	 <COND (<EQUAL? ,ANNOUNCEMENT-COUNTER 1>
 		<QUEUE I-ANNOUNCEMENT 470>
@@ -3857,14 +3882,15 @@ air and water purification, artificial gravity, power plant -- have been
 completely transfigured into a tiny factory.|
    The purpose of the factory is obvious, because all around you are row after
 row of featureless pyramids, each perfectly identical, each sitting aboard a
-tiny spacecraft waiting to be launched toward every sector of the galaxy.">
+miniature spacepod waiting to be launched toward every sector of the galaxy.">
 		<COND (<FSET? ,PYRAMID ,NDESCBIT>
 		       <FCLEAR ,PYRAMID ,NDESCBIT>
 		       <TELL
 " The original pyramid sits on a pedestal in the center of the factory,
 like a monarch impassively surveying its domain.">)>
 		<RTRUE>)
-	       (<EQUAL? .RARG ,M-ENTER>
+	       (<AND <EQUAL? .RARG ,M-ENTER>
+		     <NOT ,FLOYD-SHOT>>
 		<QUEUE I-FACTORY -1>)>>
 
 <ROUTINE I-FACTORY ()
@@ -3898,10 +3924,12 @@ louder, the pyramid and its pedestal begin vibrating, and the sharp smell of
 ozone assaults you.|
    The noise and the smell and the vibration overwhelm you. As your knees
 buckle and you drop to the deck, the pyramid explodes in a burst of intense
-white light. The explosion leaves you momentarily blinded, but on all sides
-you can hear the sounds of systems shutting down. Over the PA system, you
-hear a mechanized voice, getting slower and deeper like a stereo disc that
-has lost its power: \"Launch aborted -- launch -- abort --\"|
+white light. The explosion leaves you momentarily blinded, but you can hear
+a mechanized voice on the P.A. system, getting slower and deeper like a stereo
+disc that has lost its power: \"Launch aborted -- launch -- abort --\"|
+   The replica pyramids fade to darkness, and a subtle change in background
+sound tells you that the space station's systems and machinery are returning
+to their normal functions.|
    Still dazed, you crawl over to Floyd, lying in a smoking heap near the
 blackened pedestal. Damaged beyond any conceivable repairs, he half-opens his
 eyes and looks up at you for the last time. \"Floyd sorry for the way he acted.
@@ -3915,7 +3943,7 @@ set drops to the deck.|
 mind. \"...think instead about the joy-filled times when you and your friend
 were together.\" A noise makes you turn around, and you see Oliver, the little
 robot that stirred such brotherly feelings in Floyd. Toddling over to you on
-unsteady legs, he looks uncomprehendingly at Floyd's corpse, but picks up the
+unsteady legs, he looks uncomprehendingly at Floyd's remains, but picks up the
 paddleball set. Oliver looks up at you, tugs on the leg of your "
 'PATROL-UNIFORM ", and asks in a quavering voice, \"Play game...
 Play game with Oliver?\"" CR CR>

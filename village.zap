@@ -32,9 +32,10 @@
 
 	.FUNCT	IRIS-HATCH-F
 	EQUAL?	PRSA,V?CLOSE,V?OPEN \?CCL3
-	PRINTR	"It won't budge."
+	PRINT	WONT-BUDGE
+	RTRUE	
 ?CCL3:	EQUAL?	PRSA,V?EXAMINE \FALSE
-	PRINTI	"The hatch, like the f-stop of a camera, is composed of many pieces which move to form a circular opening of the desired size. This is a common way of joining connecting tubes to ships or stations. "
+	PRINTI	"The hatch, like the f-stop of a camera, is composed of many pieces which move to form a circular opening of the desired size. This is a common way of joining connecting tubes to ships or stations. There's a slot next to the hatch. "
 	RFALSE	
 
 
@@ -93,28 +94,6 @@
 	RFALSE	
 
 
-	.FUNCT	I-HEADLAMP
-	FSET?	HEADLAMP,ONBIT \?CCL3
-	DEC	'HEADLAMP-COUNTER
-	ZERO?	HEADLAMP-COUNTER \?CND4
-	FCLEAR	HEADLAMP,ACTIVEBIT
-	FCLEAR	HEADLAMP,ONBIT
-?CND4:	CALL	VISIBLE?,HEADLAMP
-	ZERO?	STACK /FALSE
-	EQUAL?	HEADLAMP-COUNTER,0,15,30 \FALSE
-	PRINTI	"   The light from the headlamp "
-	ZERO?	HEADLAMP-COUNTER \?CCL13
-	PRINTI	"flickers and dies!"
-	CRLF	
-	CALL	NOW-DARK?
-	RSTACK	
-?CCL13:	EQUAL?	HEADLAMP-COUNTER,5 \?CCL15
-	PRINTR	"is almost out!"
-?CCL15:	PRINTR	"seems somewhat dimmer."
-?CCL3:	CALL	DEQUEUE,I-HEADLAMP
-	RSTACK	
-
-
 	.FUNCT	BARBERSHOP-F,RARG
 	EQUAL?	RARG,M-LOOK \FALSE
 	PRINTI	"You have entered a surprisingly old-fashioned looking tonsorial parlor. "
@@ -134,15 +113,18 @@
 	PRINTR	"You look mah-velous."
 ?CCL7:	EQUAL?	PRSA,V?LOOK-UNDER,V?LOOK-BEHIND \?CCL9
 	PRINTR	"The mirror seems to be affixed to the wall."
-?CCL9:	EQUAL?	PRSA,V?MUNG /?CCL11
-	EQUAL?	PRSA,V?THROW \FALSE
-	EQUAL?	PRSI,PSEUDO-OBJECT \FALSE
-?CCL11:	SET	'MIRROR-BROKEN,TRUE-VALUE
+?CCL9:	EQUAL?	PRSA,V?KILL,V?KICK,V?MUNG \?CCL11
+	SET	'MIRROR-BROKEN,TRUE-VALUE
 	MOVE	FOIL,HERE
 	PRINTI	"The mirror smashes into a cloud of glass dust, which (fortunately) is quickly sucked away by the barbershop's ventilation system. As the glass is sucked away you discover what gave the mirror its reflectivity: "
 	GETP	FOIL,P?FDESC
 	PRINT	STACK
 	CRLF	
+	RTRUE	
+?CCL11:	EQUAL?	PRSA,V?THROW \FALSE
+	EQUAL?	PRSI,PSEUDO-OBJECT \FALSE
+	MOVE	PRSO,HERE
+	CALL	PERFORM,V?KICK,PSEUDO-OBJECT
 	RTRUE	
 
 
@@ -150,7 +132,7 @@
 	EQUAL?	PRSA,V?EXAMINE,V?MEASURE \?CCL3
 	PRINTI	"It's a large piece of "
 	PRINTD	FOIL
-	PRINTR	", about six feet on a side."
+	PRINTR	", about two meters on a side."
 ?CCL3:	EQUAL?	PRSA,V?CRUMPLE \?CCL5
 	PRINTR	"You crumple the foil into a fist-sized wad, but it instantly returns to its wrinkle-free state."
 ?CCL5:	EQUAL?	PRSA,V?FIND \FALSE
@@ -220,7 +202,9 @@
 ?CCL10:	EQUAL?	PRSA,V?CATCH,V?TAKE \?CCL21
 	CALL	PERFORM,V?TAKE,LEASH
 	RTRUE	
-?CCL21:	EQUAL?	PRSA,V?HUG,V?TOUCH \FALSE
+?CCL21:	EQUAL?	PRSA,V?SMELL \?CCL23
+	PRINTR	"There's an odor reminiscent of your school dorm on a night when the dining hall served Northern Gallium Bonzo Beans."
+?CCL23:	EQUAL?	PRSA,V?HUG,V?TOUCH \FALSE
 	PRINTI	"The "
 	PRINTD	BALLOON
 	PRINTR	" purrs and rings of color shimmer along its body."
@@ -229,65 +213,58 @@
 	.FUNCT	LEASH-F
 	EQUAL?	PRSA,V?MOVE,V?TAKE \?CCL3
 	EQUAL?	PRSO,LEASH \?CCL3
-	IN?	BALLOON,CAGE \?CCL8
-	PRINT	YOU-CANT
-	PRINTR	"reach the leash inside the cage."
-?CCL8:	ZERO?	HANGING-IN-AIR /?CCL10
+	ZERO?	HANGING-IN-AIR /?CCL8
 	PRINT	SENILITY-STRIKES
 	RTRUE	
-?CCL10:	FSET?	SPACESUIT,WORNBIT \?CCL12
+?CCL8:	FSET?	SPACESUIT,WORNBIT \?CCL10
 	PRINTR	"The space suit's glove is a bit too big and clumsy to fit through the loop of the leash. You'll have to remove the suit before grabbing the leash."
-?CCL12:	FSET?	HERE,WEIGHTLESSBIT \?CCL14
+?CCL10:	FSET?	HERE,WEIGHTLESSBIT \?CCL12
 	PRINTI	"The Arcturian tries to ""float"" away from you, but its buoyancy system is useless in zero-gee. As you grasp the leash, it uses its lateral propulsion method in an attempt to get away. In other words, it farts right in your face. In a reflexive maneuver to wave away the odor, you release the leash"
 	CALL	CCOUNT,PROTAGONIST
-	GRTR?	STACK,0 \?CND15
+	GRTR?	STACK,0 \?CND13
 	CALL	ROB,PROTAGONIST,HERE
 	PRINTI	" and drop everything you were holding"
-?CND15:	PRINT	PERIOD-CR
+?CND13:	PRINT	PERIOD-CR
 	RTRUE	
-?CCL14:	SET	'HANGING-IN-AIR,TRUE-VALUE
+?CCL12:	SET	'HANGING-IN-AIR,TRUE-VALUE
 	PRINTI	"As you grab the leash, the startled "
 	PRINTD	BALLOON
 	PRINTI	" tries to get away by hyperinflating. Slowly, its buoyancy lifts you right "
-	FSET?	BOOTS,WORNBIT \?CCL19
+	FSET?	BOOTS,WORNBIT \?CCL17
 	FCLEAR	BOOTS,WORNBIT
 	MOVE	BOOTS,HERE
 	PRINTI	"out of the "
 	PRINTD	BOOTS
-	JUMP	?CND17
-?CCL19:	PRINTI	"off the deck"
-?CND17:	PRINTI	"! Within moments, the Arcturian is bobbing against the ceiling, and you're hanging five feet off the floor! (Footnote 4)"
+	JUMP	?CND15
+?CCL17:	PRINTI	"off the deck"
+?CND15:	PRINTI	"! Within moments, the Arcturian is bobbing against the ceiling, and you're hanging two meters off the floor! (Footnote 4)"
 	CRLF	
 	IN?	FLOYD,HERE \TRUE
 	FSET?	FLOYD,ACTIVEBIT \TRUE
 	ZERO?	HANGING-COMMENT \TRUE
 	SET	'FLOYD-SPOKE,TRUE-VALUE
-	CALL	FLOYDS-HANGING-IN-AIR-COMMENT
+	SET	'HANGING-COMMENT,TRUE-VALUE
+	PRINT	FLOYDS-HANGING-IN-AIR-COMMENT
 	RTRUE	
-?CCL3:	EQUAL?	PRSA,V?UNTIE,V?REMOVE \?CCL26
+?CCL3:	EQUAL?	PRSA,V?UNTIE,V?REMOVE \?CCL24
 	PRINTI	"There's no obvious way to remove the leash from"
 	CALL	TRPRINT,BALLOON
 	RSTACK	
-?CCL26:	EQUAL?	PRSA,V?DISCONNECT \?CCL28
-	ZERO?	PRSI /?CTR27
-	EQUAL?	PRSI,BALLOON \?CCL28
-?CTR27:	CALL	PERFORM,V?REMOVE,LEASH
+?CCL24:	EQUAL?	PRSA,V?DISCONNECT \?CCL26
+	ZERO?	PRSI /?CTR25
+	EQUAL?	PRSI,BALLOON \?CCL26
+?CTR25:	CALL	PERFORM,V?REMOVE,LEASH
 	RTRUE	
-?CCL28:	EQUAL?	PRSA,V?DROP \FALSE
+?CCL26:	EQUAL?	PRSA,V?DROP \FALSE
 	ZERO?	HANGING-IN-AIR /FALSE
 	SET	'HANGING-IN-AIR,FALSE-VALUE
 	PRINTI	"You drop to the deck."
-	IN?	BALLOON,HERE \?CND37
+	IN?	BALLOON,HERE \?CND35
 	PRINTI	" The "
 	PRINTD	BALLOON
 	PRINTR	" gradually floats downward until it's back at around eye-level."
-?CND37:	CRLF	
+?CND35:	CRLF	
 	RTRUE	
-
-
-	.FUNCT	FLOYDS-HANGING-IN-AIR-COMMENT
-	SET	'HANGING-COMMENT,TRUE-VALUE
-	PRINTR	"   ""Boy, that looks like fun!"" says Floyd, peering up at you. ""Can Floyd try it? Huh? Please?"""
 
 
 	.FUNCT	PANEL-F
@@ -389,27 +366,32 @@
 
 	.FUNCT	DICE-F,NUM,?TMP1
 	EQUAL?	PRSA,V?THROW,V?ROLL \?CCL3
-	FSET?	HERE,WEIGHTLESSBIT \?CCL6
+	CALL	ULTIMATELY-IN?,DICE
+	ZERO?	STACK \?CCL6
+	PRINT	YNH
+	CALL	TRPRINT,DICE
+	RTRUE
+?CCL6:	FSET?	HERE,WEIGHTLESSBIT \?CCL8
 	RANDOM	100
-	LESS?	50,STACK /?CCL9
+	LESS?	50,STACK /?CCL11
 	SET	'NUM,7
 	JUMP	?CND4
-?CCL9:	SET	'NUM,11
+?CCL11:	SET	'NUM,11
 	JUMP	?CND4
-?CCL6:	RANDOM	6 >?TMP1
+?CCL8:	RANDOM	6 >?TMP1
 	RANDOM	6
 	ADD	?TMP1,STACK >NUM
 ?CND4:	MOVE	DICE,HERE
 	PRINTI	"You roll a"
-	EQUAL?	NUM,8,11 \?CND10
+	EQUAL?	NUM,8,11 \?CND12
 	PRINTC	110
-?CND10:	PRINTC	32
+?CND12:	PRINTC	32
 	PRINTN	NUM
-	FSET?	HERE,WEIGHTLESSBIT \?CND12
-	ZERO?	DICE-FOOTNOTE \?CND12
+	FSET?	HERE,WEIGHTLESSBIT \?CND14
+	ZERO?	DICE-FOOTNOTE \?CND14
 	SET	'DICE-FOOTNOTE,TRUE-VALUE
 	PRINTI	" (Footnote 1)"
-?CND12:	PRINT	PERIOD-CR
+?CND14:	PRINT	PERIOD-CR
 	RTRUE	
 ?CCL3:	EQUAL?	PRSA,V?SHAKE \FALSE
 	PRINTR	"Shaken."
@@ -434,7 +416,7 @@
 
 
 	.FUNCT	VACUUM-DEATH
-	CALL	JIGS-UP,STR?355
+	CALL	JIGS-UP,STR?365
 	RSTACK	
 
 
@@ -453,7 +435,7 @@
 	.FUNCT	COUNTER-F
 	EQUAL?	PRSA,V?SEARCH,V?LOOK-BEHIND,V?LOOK-UNDER /?PRD5
 	EQUAL?	PRSA,V?HIDE,V?EXAMINE \?CCL3
-?PRD5:	IN?	NECTAR,LOCAL-GLOBALS \?CCL3
+?PRD5:	FSET?	NECTAR,TOUCHBIT /?CCL3
 	CALL	PERFORM,V?SEARCH,GLOBAL-ROOM
 	RTRUE	
 ?CCL3:	EQUAL?	PRSA,V?LOOK-OVER \FALSE
@@ -463,14 +445,20 @@
 	.FUNCT	NECTAR-F
 	EQUAL?	PRSA,V?EMPTY,V?POUR,V?THROW \?CCL3
 	EQUAL?	PRSO,NECTAR \?CCL3
-	PRINTI	"You create a nectarish mess, which thankfully dries up very quickly"
+	CALL	MESS,STR?369
 	CALL	ANTI-LITTER,NECTAR
 	RSTACK	
 ?CCL3:	EQUAL?	PRSA,V?LOOK-INSIDE \?CCL7
 	CALL	NOUN-USED,W?CUP,NECTAR
 	ZERO?	STACK /?CCL7
-	PRINTR	"The cup is filled with nectar."
-?CCL7:	EQUAL?	PRSA,V?FIND \FALSE
+	PRINTR	"Yup. Nectar."
+?CCL7:	EQUAL?	PRSA,V?EXAMINE,V?TOUCH,V?REACH-IN /?CTR10
+	EQUAL?	PRSA,V?TASTE \?CCL11
+?CTR10:	PRINTR	"The nectar is warm and thick."
+?CCL11:	EQUAL?	PRSA,V?EAT-FROM \?CCL15
+	CALL	PERFORM,V?EAT,NECTAR
+	RTRUE	
+?CCL15:	EQUAL?	PRSA,V?FIND \FALSE
 	IN?	NECTAR,LOCAL-GLOBALS \FALSE
 	EQUAL?	HERE,GREASY-STRAW \FALSE
 	CALL	PERFORM,V?SEARCH,GLOBAL-ROOM
@@ -515,7 +503,7 @@
 	GRTR?	DETECTOR-COUNTER,99 \?CCL12
 	PRINTR	"Ouch! The detector is too hot to pick up!"
 ?CCL12:	CALL	ITAKE
-	EQUAL?	STACK,M-FATAL,FALSE-VALUE /FALSE
+	EQUAL?	STACK,M-FATAL,FALSE-VALUE /TRUE
 	PRINTI	"As you pick up the detector, you notice that is feels "
 	GRTR?	DETECTOR-COUNTER,75 \?CND15
 	PRINTI	"very "
@@ -541,30 +529,6 @@
 	PRINTR	"The beeping is strongest as you approach the mirror."
 
 
-	.FUNCT	I-PLATINUM-DETECTOR,?TMP1
-	INC	'DETECTOR-COUNTER
-	CALL	VISIBLE?,PLATINUM-DETECTOR
-	ZERO?	STACK /?CND1
-	CALL	META-LOC,FOIL >?TMP1
-	CALL	META-LOC,PLATINUM-DETECTOR
-	EQUAL?	?TMP1,STACK /?CCL2
-	CALL	ULTIMATELY-IN?,PLATINUM-DETECTOR,BARBERSHOP
-	ZERO?	STACK /?CND1
-	ZERO?	MIRROR-BROKEN \?CND1
-?CCL2:	PRINTI	"   The detector is quietly beeping."
-	CRLF	
-?CND1:	EQUAL?	DETECTOR-COUNTER,50,75 \?CCL11
-	IN?	PLATINUM-DETECTOR,PROTAGONIST \?CCL11
-	PRINTI	"   You notice that the detector is getting "
-	EQUAL?	DETECTOR-COUNTER,75 \?CND14
-	PRINTI	"very "
-?CND14:	PRINTR	"warm."
-?CCL11:	EQUAL?	DETECTOR-COUNTER,100 \FALSE
-	IN?	PLATINUM-DETECTOR,PROTAGONIST \FALSE
-	MOVE	PLATINUM-DETECTOR,HERE
-	PRINTR	"   Yeow! The detector is now too hot to handle, so you drop it."
-
-
 	.FUNCT	TRAVEL-AGENCY-POSTER-F
 	EQUAL?	PRSA,V?EXAMINE,V?READ \FALSE
 	PRINTR	"The posters show a sunset on ""Historic Ramos II,"" the steel and zynoid towers of ""Varshon, the Galactic Capital,"" and scantily-clad beauties cavorting on the beaches of ""The Pleasure Moons of Mazzotta."""
@@ -582,14 +546,16 @@
 	EQUAL?	PRSA,V?OPEN \FALSE
 	FSET?	INNER-AIRLOCK-DOOR,OPENBIT /FALSE
 	FSET?	OUTER-AIRLOCK-DOOR,OPENBIT \FALSE
-	PRINTR	"It won't budge."
+	PRINT	WONT-BUDGE
+	RTRUE	
 
 
 	.FUNCT	OUTER-AIRLOCK-DOOR-F,X=0,N=0,OBJ-FLUSHED=0,?TMP1
 	EQUAL?	PRSA,V?OPEN \?CCL3
 	FSET?	OUTER-AIRLOCK-DOOR,OPENBIT /?CCL3
 	FSET?	INNER-AIRLOCK-DOOR,OPENBIT \?CCL8
-	PRINTR	"It won't budge."
+	PRINT	WONT-BUDGE
+	RTRUE	
 ?CCL8:	PRINTI	"As the door opens, the air in the lock whooshes out into the vacuum of space"
 	FSET?	SPACESUIT,WORNBIT /?CCL11
 	PRINTI	". "
@@ -600,38 +566,41 @@
 	CALL	LOST-IN-SPACE
 	JUMP	?CND9
 ?CCL13:	FSET	OUTER-AIRLOCK-DOOR,OPENBIT
-	FIRST?	AIRLOCK >X /?PRG14
-?PRG14:	ZERO?	X /?REP15
-	NEXT?	X >N /?KLU39
-?KLU39:	EQUAL?	X,PROTAGONIST,OSTRICH,BALLOON /?CND18
+	CALL	META-LOC,EXPLOSIVE
+	EQUAL?	STACK,HERE \?CND14
+	CALL	DEQUEUE,I-EXPLOSIVE-MELT
+?CND14:	FIRST?	AIRLOCK >X /?PRG16
+?PRG16:	ZERO?	X /?REP17
+	NEXT?	X >N /?KLU41
+?KLU41:	EQUAL?	X,PROTAGONIST,OSTRICH,BALLOON /?CND20
 	REMOVE	X
 	SET	'OBJ-FLUSHED,TRUE-VALUE
-?CND18:	SET	'X,N
-	JUMP	?PRG14
-?REP15:	ZERO?	OBJ-FLUSHED /?CND20
+?CND20:	SET	'X,N
+	JUMP	?PRG16
+?REP17:	ZERO?	OBJ-FLUSHED /?CND22
 	PRINTI	", flushing everything in the airlock"
-?CND20:	PRINT	PERIOD-CR
-?CND9:	IN?	OSTRICH,HERE \?CND22
+?CND22:	PRINT	PERIOD-CR
+?CND9:	IN?	OSTRICH,HERE \?CND24
 	REMOVE	OSTRICH
 	PRINT	PATHETIC-SQUAWK
 	PRINTI	" as it is swept into space, quickly dwindling from sight."
 	CRLF	
-?CND22:	IN?	BALLOON,HERE \?CND24
+?CND24:	IN?	BALLOON,HERE \?CND26
 	REMOVE	BALLOON
 	REMOVE	LEASH
 	PRINTI	"   The "
 	PRINTD	BALLOON
 	PRINTI	", unable to adjust to the sudden drop in pressure, explodes into a puff of hydrogen that immediately vanishes!"
 	CRLF	
-?CND24:	CALL	ULTIMATELY-IN?,FOOD-KIT
-	ZERO?	STACK /?CND26
+?CND26:	CALL	ULTIMATELY-IN?,FOOD-KIT
+	ZERO?	STACK /?CND28
 	LOC	ORANGE-GOO >?TMP1
 	LOC	GRAY-GOO
-	EQUAL?	FOOD-KIT,?TMP1,STACK \?CND26
-	FSET?	FOOD-KIT,OPENBIT \?CND26
+	EQUAL?	FOOD-KIT,?TMP1,STACK \?CND28
+	FSET?	FOOD-KIT,OPENBIT \?CND28
 	PRINTI	"   "
 	CALL	SPACE-FOOD
-?CND26:	CALL	SPACE-LIQUID,SOUP
+?CND28:	CALL	SPACE-LIQUID,SOUP
 	CALL	SPACE-LIQUID,COFFEE
 	CALL	SPACE-LIQUID,NECTAR
 	RTRUE	
@@ -640,9 +609,9 @@
 	FSET?	OUTER-AIRLOCK-DOOR,OPENBIT \FALSE
 	FCLEAR	OUTER-AIRLOCK-DOOR,OPENBIT
 	CALL	ULTIMATELY-IN?,EXPLOSIVE,HERE
-	ZERO?	STACK /?CND36
+	ZERO?	STACK /?CND38
 	CALL	QUEUE,I-EXPLOSIVE-MELT,-1
-?CND36:	PRINTR	"As soon as the door is closed, air hisses back into the airlock."
+?CND38:	PRINTR	"As soon as the door is closed, air hisses back into the airlock."
 
 
 	.FUNCT	GENERIC-AIRLOCK-DOOR-F
@@ -655,7 +624,7 @@
 
 	.FUNCT	AIRLOCK-F,RARG
 	EQUAL?	RARG,M-LOOK \FALSE
-	PRINTI	"This is a cramped lock with doors above and below you. "
+	PRINTI	"This is a cramped airlock with doors above and below you. "
 	FSET?	INNER-AIRLOCK-DOOR,OPENBIT /?CCL6
 	FSET?	OUTER-AIRLOCK-DOOR,OPENBIT /?CCL6
 	PRINTI	"Neither door"
@@ -699,12 +668,12 @@
 	PUSH	0
 	JUMP	?CND23
 ?CCL27:	PUSH	OUTER-AIRLOCK-DOOR
-?CND23:	CALL	PERFORM-PRSA,STACK
-	RSTACK	
+?CND23:	CALL	PERFORM,PRSA,STACK
+	RTRUE	
 
 
 	.FUNCT	LOST-IN-SPACE
-	CALL	JIGS-UP,STR?366
+	CALL	JIGS-UP,STR?377
 	RSTACK	
 
 
@@ -712,7 +681,7 @@
 	EQUAL?	RARG,M-LOOK \FALSE
 	PRINTI	"This area outside the airlock is being used for vacuum storage, in much the same way that your dad kept beer cold in the back yard during winters on Gallium. In fact, the villagers usually refer to this place as the ""vac yard."" Only the "
 	PRINTD	BOOTS
-	PRINTI	", clinging to the outer skin of the warehouse, are preventing you from floating off into space. Tethered all around you: those items in the Trading Post's inventory that, for reasons of temperature or anti-corrosion, must be stored here in space. The door to the airlock, ""above"" you, is "
+	PRINTI	", clinging to the outer skin of the warehouse, is preventing you from floating off into space. Tethered all around you: those items in the Trading Post's inventory that, for reasons of temperature or anti-corrosion, must be stored here in space. The door to the airlock, ""above"" you, is "
 	CALL	OPEN-CLOSED,OUTER-AIRLOCK-DOOR
 	PRINTC	46
 	RTRUE	
@@ -730,46 +699,19 @@
 	RSTACK	
 ?CCL8:	CRLF	
 	RTRUE	
-?CCL3:	EQUAL?	PRSA,V?DISCONNECT \FALSE
+?CCL3:	EQUAL?	PRSA,V?PUT \?CCL10
+	EQUAL?	PRSI,HEATING-CHAMBER \?CCL10
+	PRINTI	"The explosive "
+	PRINT	SUBLIMES-INTO-FREZONE
+	CALL	DEQUEUE,I-EXPLOSIVE-MELT
+	CALL	REMOVE-CAREFULLY,EXPLOSIVE
+	CRLF	
+	RTRUE	
+?CCL10:	EQUAL?	PRSA,V?DISCONNECT \FALSE
 	ZERO?	PRSI \FALSE
 	ZERO?	EXPLOSIVE-CONNECTED /FALSE
 	CALL	PERFORM,V?DISCONNECT,EXPLOSIVE,DETONATOR
 	RTRUE	
-
-
-	.FUNCT	I-EXPLOSIVE-MELT,OLD-MELT-COUNTER
-	SET	'OLD-MELT-COUNTER,MELT-COUNTER
-	IN?	EXPLOSIVE,THERMOS \?CCL3
-	FSET?	THERMOS,OPENBIT /?CCL3
-	DIV	C-ELAPSED,4
-	JUMP	?CND1
-?CCL3:	PUSH	C-ELAPSED
-?CND1:	ADD	MELT-COUNTER,STACK >MELT-COUNTER
-	GRTR?	MELT-COUNTER,210 \?CCL8
-	CALL	VISIBLE?,EXPLOSIVE
-	ZERO?	STACK /?CCL11
-	PRINTI	"   The explosive "
-	PRINT	SUBLIMES-INTO-FREZONE
-	CRLF	
-	JUMP	?CND9
-?CCL11:	IN?	EXPLOSIVE,THERMOS \?CND9
-	FSET?	THERMOS,OPENBIT /?CND9
-	SET	'THERMOS-FILLED-WITH-GAS,TRUE-VALUE
-?CND9:	CALL	REMOVE-CAREFULLY,EXPLOSIVE
-	RSTACK	
-?CCL8:	CALL	VISIBLE?,EXPLOSIVE
-	ZERO?	STACK /FALSE
-	ZERO?	LIT /FALSE
-	GRTR?	MELT-COUNTER,170 \?CCL21
-	GRTR?	OLD-MELT-COUNTER,170 /?CCL21
-	PRINTI	"  "
-	CALL	DESCRIBE-EXPLOSIVE
-	RSTACK	
-?CCL21:	GRTR?	MELT-COUNTER,130 \FALSE
-	GRTR?	OLD-MELT-COUNTER,130 /FALSE
-	PRINTI	"  "
-	CALL	DESCRIBE-EXPLOSIVE
-	RSTACK	
 
 
 	.FUNCT	DESCRIBE-EXPLOSIVE
@@ -793,57 +735,62 @@
 A mixture of high-quality spores
 Lowest gas-inducement levels of any brand!"""
 ?CCL8:	EQUAL?	PRSA,V?SPRAY \FALSE
-	ZERO?	PRSI /?CCL13
-	PRINTR	"The nozzle of the can isn't very directional; rather than spraying the can on something in particular, it seems to be more designed to simply produce a broad mist."
-?CCL13:	ZERO?	SPRAY-COUNTER \?CCL15
+	CALL	ULTIMATELY-IN?,SPRAY-CAN
+	ZERO?	STACK \?CCL13
+	PRINT	YNH
+	CALL	TRPRINT,SPRAY-CAN
+	RTRUE	
+?CCL13:	ZERO?	PRSI /?CCL15
+	PRINTR	"The nozzle of the can isn't very directional; rather than spraying something in particular, it seems designed to produce a broad mist."
+?CCL15:	ZERO?	SPRAY-COUNTER \?CND11
 	PRINT	NOTHING-HAPPENS
 	RTRUE	
-?CCL15:	DEC	'SPRAY-COUNTER
+?CND11:	DEC	'SPRAY-COUNTER
 	PRINTI	"A dusty mist puffs from the can and begins dissipating"
-	IN?	BALLOON,HERE \?CCL18
+	IN?	BALLOON,HERE \?CCL19
 	PRINTI	". The "
 	PRINTD	BALLOON
 	PRINTI	" begins darting around the room, its mouth absurdly wide open"
-	JUMP	?CND16
-?CCL18:	EQUAL?	HERE,PET-STORE \?CCL20
-	IN?	BALLOON,CAGE \?CCL20
+	JUMP	?CND17
+?CCL19:	EQUAL?	HERE,PET-STORE \?CCL21
+	IN?	BALLOON,CAGE \?CCL21
 	PRINTI	". The "
 	PRINTD	BALLOON
 	PRINTI	" puffs wildly around the cage, trying to get at the yummy spores"
-	JUMP	?CND16
-?CCL20:	CALL	NEXT-ROOM?,BALLOON
-	ZERO?	STACK /?CND16
-	EQUAL?	HERE,BRIG,ARMORY /?CND16
+	JUMP	?CND17
+?CCL21:	CALL	NEXT-ROOM?,BALLOON
+	ZERO?	STACK /?CND17
+	EQUAL?	HERE,BRIG,ARMORY /?CND17
 	PRINTI	". The "
 	PRINTD	BALLOON
-	EQUAL?	HERE,CHAPEL \?CCL28
-	FSET?	ETERNAL-FLAME,ONBIT \?CCL28
+	EQUAL?	HERE,CHAPEL \?CCL29
+	FSET?	ETERNAL-FLAME,ONBIT \?CCL29
 	PRINTR	" appears in the doorway, stops, and hastily puffs away."
-?CCL28:	PRINTI	" farts in, hungrily gobbling up the spores"
-	ZERO?	CROSSED-BOUNDARY \?CCL32
-	IN?	BALLOON,ELEVATOR /?CCL32
-	EQUAL?	HERE,ELEVATOR \?CND31
-?CCL32:	PRINTI	". As the "
+?CCL29:	PRINTI	" farts in, hungrily gobbling up the spores"
+	ZERO?	CROSSED-BOUNDARY \?CCL33
+	IN?	BALLOON,ELEVATOR /?CCL33
+	EQUAL?	HERE,ELEVATOR \?CND32
+?CCL33:	PRINTI	". As the "
 	PRINTD	BALLOON
 	PRINTI	" crosses the boundary "
-	ZERO?	CROSSED-BOUNDARY /?CCL38
+	ZERO?	CROSSED-BOUNDARY /?CCL39
 	PRINTI	"between the Command Module and the village"
-	JUMP	?CND36
-?CCL38:	PRINTI	"of the "
+	JUMP	?CND37
+?CCL39:	PRINTI	"of the "
 	PRINTD	ELEVATOR-SHAFT
-?CND36:	PRINTI	", it is caught unawares by the sudden "
-	EQUAL?	CROSSED-BOUNDARY,1 /?CTR40
-	EQUAL?	HERE,ELEVATOR \?CCL41
-?CTR40:	PRINTI	"lack of gravity, but soon"
-	JUMP	?CND39
-?CCL41:	PRINTI	"presence of gravity. It sinks almost to the floor before it"
-?CND39:	PRINTI	" adjusts"
-?CND31:	MOVE	BALLOON,HERE
+?CND37:	PRINTI	", it is caught unawares by the sudden "
+	EQUAL?	CROSSED-BOUNDARY,1 /?CTR41
+	EQUAL?	HERE,ELEVATOR \?CCL42
+?CTR41:	PRINTI	"lack of gravity, but soon"
+	JUMP	?CND40
+?CCL42:	PRINTI	"presence of gravity. It sinks almost to the floor before it"
+?CND40:	PRINTI	" adjusts"
+?CND32:	MOVE	BALLOON,HERE
 	MOVE	LEASH,HERE
 	SET	'CROSSED-BOUNDARY,0
-?CND16:	ZERO?	HANGING-IN-AIR /?CND44
+?CND17:	ZERO?	HANGING-IN-AIR /?CND45
 	PRINTI	". Like an epileptic yo-yo, you are flung against the ceiling, floor, and most of the walls"
-?CND44:	PRINT	PERIOD-CR
+?CND45:	PRINT	PERIOD-CR
 	RTRUE	
 
 
@@ -946,7 +893,7 @@ Lowest gas-inducement levels of any brand!"""
 	EQUAL?	PRSI,PSEUDO-OBJECT \?CCL3
 	GETP	PRSO,P?SIZE
 	GRTR?	STACK,5 \?CCL8
-	CALL	DOESNT-FIT,STR?249
+	CALL	DOESNT-FIT,STR?257
 	RSTACK	
 ?CCL8:	PRINTI	"With a ""fwoomp!"""
 	CALL	TPRINT-PRSO
@@ -965,14 +912,14 @@ Lowest gas-inducement levels of any brand!"""
 
 	.FUNCT	OSTRICH-F
 	EQUAL?	PRSA,V?EXAMINE \?CCL3
-	PRINTI	"It's a handsome, full-grown ostrich, nearly eight feet tall. As with all ostriches, half its height is its neck"
+	PRINTI	"It's a handsome, full-grown ostrich, nearly three meters tall. As with all ostriches, half its height is its neck"
 	FSET?	OSTRICH,TOUCHBIT /?CND4
 	PRINTI	". The ostrich looks to be asleep, or unconscious, or drunk"
 ?CND4:	PRINT	PERIOD-CR
 	RTRUE	
 ?CCL3:	EQUAL?	PRSA,V?SHOOT \?CCL7
 	REMOVE	OSTRICH
-	PRINTR	"The ostrich gives the last of a generous lifetime's supply of squawks before being consumed in fiery raygun death."
+	PRINTR	"The ostrich gives the last of a generous lifetime's supply of squawks before being consumed in fiery zapgun death."
 ?CCL7:	FSET?	OSTRICH,TOUCHBIT /?CCL9
 	EQUAL?	PRSA,V?SCARE \?CCL12
 	PRINTR	"The ostrich is unconscious!"
@@ -1005,18 +952,21 @@ Lowest gas-inducement levels of any brand!"""
 ?CCL31:	PRINTI	"The ostrich emits a terrified squawk and sticks its head "
 	EQUAL?	HERE,DOC-SCHUSTER \?CCL38
 	PRINTI	"into the disposal hole"
+	ZERO?	OSTRICH-FOOTNOTE \?CND36
+	SET	'OSTRICH-FOOTNOTE,TRUE-VALUE
+	PRINTI	" (Footnote 14)"
 	JUMP	?CND36
-?CCL38:	EQUAL?	HERE,PX \?CCL40
-	IN?	DISPENSER,HERE \?CCL40
+?CCL38:	EQUAL?	HERE,PX \?CCL42
+	IN?	DISPENSER,HERE \?CCL42
 	PRINTI	"into the dispenser hole."
 	CALL	OSTRICH-INTO-DISPENSER
 	CRLF	
 	RTRUE	
-?CCL40:	IN?	HEATING-CHAMBER,HERE \?CCL44
+?CCL42:	IN?	HEATING-CHAMBER,HERE \?CCL46
 	PRINTI	"into the "
 	PRINTD	HEATING-CHAMBER
 	PRINTR	". After a quick singe, it jerks its head out, squawking in pain."
-?CCL44:	PRINTI	"under its wing"
+?CCL46:	PRINTI	"under its wing"
 ?CND36:	PRINTR	" for a moment."
 
 
@@ -1033,12 +983,12 @@ Lowest gas-inducement levels of any brand!"""
 	RSTACK	
 ?CCL3:	EQUAL?	PRSA,V?REACH-IN,V?LOOK-INSIDE \?CCL5
 	EQUAL?	PRSO,PSEUDO-OBJECT \?CCL5
-	CALL	PERFORM-PRSA,ID-CHANGER,PRSI
-	RSTACK	
+	CALL	PERFORM,PRSA,ID-CHANGER,PRSI
+	RTRUE	
 ?CCL5:	EQUAL?	PRSA,V?PUT \FALSE
 	EQUAL?	PRSI,PSEUDO-OBJECT \FALSE
-	CALL	PERFORM-PRSA,PRSO,ID-CHANGER
-	RSTACK	
+	CALL	PERFORM,PRSA,PRSO,ID-CHANGER
+	RTRUE	
 
 
 	.FUNCT	ID-CHANGER-F
@@ -1054,7 +1004,8 @@ Lowest gas-inducement levels of any brand!"""
 	PRINT	HUH
 	RTRUE	
 ?CCL8:	EQUAL?	PRSA,V?TAKE \?CCL10
-	PRINTR	"It's bolted down."
+	PRINT	WONT-BUDGE
+	RTRUE	
 ?CCL10:	EQUAL?	PRSA,V?PUT \?CCL12
 	EQUAL?	PRSI,ID-CHANGER \?CCL12
 	EQUAL?	PRSO,ID-CARD \?CCL17
@@ -1062,7 +1013,12 @@ Lowest gas-inducement levels of any brand!"""
 	FSET?	ID-CHANGER,ACTIVEBIT \?CCL20
 	PRINTI	"A voice from the machine says, """
 	ZERO?	ID-SCRAMBLED /?CCL23
-	PRINTR	"Magnetic card data is scrambled; unable to read."""
+	PRINTI	"Magnetic card data is scrambled; unable to read."""
+	ZERO?	SCRAMBLED-FOOTNOTE \?CND24
+	SET	'SCRAMBLED-FOOTNOTE,TRUE-VALUE
+	PRINTR	" (Footnote 15)"
+?CND24:	CRLF	
+	RTRUE	
 ?CCL23:	PRINTI	"Current rank is "
 	PRINTN	ID-RANK
 	PRINTI	": "
@@ -1071,7 +1027,7 @@ Lowest gas-inducement levels of any brand!"""
 	PRINT	STACK
 	PRINTR	". Enter new rank on keypad."""
 ?CCL20:	PRINTR	"The card fits neatly into the opening."
-?CCL17:	CALL	DOESNT-FIT,STR?378
+?CCL17:	CALL	DOESNT-FIT,STR?389
 	RSTACK	
 ?CCL12:	EQUAL?	PRSA,V?ON \FALSE
 	FSET?	ID-CHANGER,ACTIVEBIT /FALSE
@@ -1087,15 +1043,18 @@ Lowest gas-inducement levels of any brand!"""
 	IN?	ID-CARD,ID-CHANGER \?CCL3
 	FSET?	ID-CHANGER,ACTIVEBIT \?CCL3
 	ZERO?	ID-SCRAMBLED /?CCL8
-	CALL	RECORDING,STR?379
+	ZERO?	SCRAMBLED-FOOTNOTE \?CND9
+	SET	'SCRAMBLED-FOOTNOTE,TRUE-VALUE
+	PRINTI	"(Footnote 15) "
+?CND9:	CALL	RECORDING,STR?390
 	RSTACK	
-?CCL8:	GRTR?	P-NUMBER,10 \?CCL10
+?CCL8:	GRTR?	P-NUMBER,10 \?CCL12
 	PRINTI	"""Error!"" chirps the "
 	PRINTD	ID-CHANGER
 	PRINTR	". ""The highest rank number recognized by the Stellar Patrol is 10."""
-?CCL10:	LESS?	P-NUMBER,1 \?CCL12
+?CCL12:	LESS?	P-NUMBER,1 \?CCL14
 	PRINTR	"You may DESERVE a rank that low, but unfortunately it doesn't exist."
-?CCL12:	SET	'ID-RANK,P-NUMBER
+?CCL14:	SET	'ID-RANK,P-NUMBER
 	PRINTI	"""New rank is "
 	PRINTN	ID-RANK
 	PRINTI	": "

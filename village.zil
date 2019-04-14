@@ -41,12 +41,12 @@ the station's artificial gravity ">
 
 <ROUTINE IRIS-HATCH-F ()
 	 <COND (<VERB? OPEN CLOSE>
-		<TELL "It won't budge." CR>)
+		<TELL ,WONT-BUDGE>)
 	       (<VERB? EXAMINE>
 		<TELL
-"The hatch, like the f-stop of a camera, is composed of many pieces which
-move to form a circular opening of the desired size. This is a common way
-of joining connecting tubes to ships or stations. ">
+"The hatch, like the f-stop of a camera, is composed of many pieces which move
+to form a circular opening of the desired size. This is a common way of joining
+connecting tubes to ships or stations. There's a slot next to the hatch. ">
 		<RFALSE>)>>
 
 <ROOM MAKESHIFT-CONNECTOR
@@ -58,7 +58,7 @@ from the Command Module.")
       (WEST PER VILLAGE-BOUNDARY-F)
       (EAST TO BROADWAY)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
-      (GLOBAL IRIS-HATCH)>
+      (GLOBAL IRIS-HATCH VILLAGE)>
 
 <ROOM BROADWAY
       (IN ROOMS)
@@ -76,7 +76,8 @@ including one leading downward.")
       (WEST TO MAKESHIFT-CONNECTOR)
       (NW "Well, there are openings in ALMOST every direction.")
       (DOWN TO FORTUNE-TELLER)
-      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)>
+      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
+      (GLOBAL VILLAGE)>
 
 <ROOM FORTUNE-TELLER
       (IN ROOMS)
@@ -84,10 +85,11 @@ including one leading downward.")
       (LDESC
 "This is a tiny living bubble beneath Broadway. The inhabitant, who is
 nowhere in sight, seems to be in the profession of reading the future
-for superstitious spacemen.")
+for superstitious spacers.")
       (UP TO BROADWAY)
       (OUT TO BROADWAY)
-      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)>
+      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)
+      (GLOBAL VILLAGE)>
 
 <OBJECT CRYSTAL-BALL
 	(IN FORTUNE-TELLER)
@@ -117,6 +119,7 @@ the walls. A door leads south.")
       (SOUTH TO BROADWAY)
       (OUT TO BROADWAY)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)
+      (GLOBAL VILLAGE)
       (THINGS <PSEUDO (<> POSTER RECRUITMENT-POSTER-F)>)>
 
 <ROUTINE RECRUITMENT-POSTER-F ()
@@ -147,7 +150,8 @@ materials. There is also an in-house rec area, featuring a group of simulation
 booths. The \"street\" lies to the southwest.")
       (SW TO BROADWAY)
       (OUT TO BROADWAY)
-      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)>
+      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)
+      (GLOBAL VILLAGE)>
 
 <OBJECT SIMULATION-BOOTH
 	(IN REC-SHOP)
@@ -187,7 +191,7 @@ booths. The \"street\" lies to the southwest.")
 "groof hunting on Septurion Seven"
 "a little-known incident during the signing of the Treaty of Gishen IV"
 "a torrid romance on the tropical planet of San Cupidor"
-"searching for treasure in a magical underground kingdom"
+"searching for treasure in a magical underground empire"
 "bullfighting, skydiving, and dental hygiene">>
 
 <ROOM FIELD-OFFICE
@@ -200,7 +204,8 @@ hunk of space rock into the vicinity, and then come here to sell the rights
 to it. You can leave to the west.")
       (WEST TO BROADWAY)
       (OUT TO BROADWAY)
-      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)>
+      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)
+      (GLOBAL VILLAGE)>
 
 <OBJECT HEADLAMP
 	(IN FIELD-OFFICE)
@@ -208,6 +213,7 @@ to it. You can leave to the west.")
 	(FDESC "Some miner has left a headlamp here.")
 	(SYNONYM LAMP LIGHT HEADLAMP)
 	(FLAGS TAKEBIT LIGHTBIT WEARBIT)
+	(SIZE 8)
 	(ACTION HEADLAMP-F)>
 
 <ROUTINE HEADLAMP-F ()
@@ -233,24 +239,7 @@ leaving both hands free for work. ">
 
 <GLOBAL HEADLAMP-COUNTER 92>
 
-<ROUTINE I-HEADLAMP ()
-	 <COND (<FSET? ,HEADLAMP ,ONBIT>
-		<SETG HEADLAMP-COUNTER <- ,HEADLAMP-COUNTER 1>>
-		<COND (<EQUAL? ,HEADLAMP-COUNTER 0>
-		       <FCLEAR ,HEADLAMP ,ACTIVEBIT>
-		       <FCLEAR ,HEADLAMP ,ONBIT>)>
-		<COND (<AND <VISIBLE? ,HEADLAMP>
-		       	    <EQUAL? ,HEADLAMP-COUNTER 0 15 30>>
-		       <TELL "   The light from the headlamp ">
-		       <COND (<EQUAL? ,HEADLAMP-COUNTER 0>
-			      <TELL "flickers and dies!" CR>
-			      <NOW-DARK?>)
-			     (<EQUAL? ,HEADLAMP-COUNTER 5>
-			      <TELL "is almost out!" CR>)
-			     (T
-			      <TELL "seems somewhat dimmer." CR>)>)>)
-	       (T
-		<DEQUEUE I-HEADLAMP>)>>
+;"routine I-HEADLAMP moved to INTERRUPTS file"
 
 <ROOM BARBERSHOP
       (IN ROOMS)
@@ -258,6 +247,7 @@ leaving both hands free for work. ">
       (WEST TO GROCERY)
       (NW TO BROADWAY)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
+      (GLOBAL VILLAGE)
       (ACTION BARBERSHOP-F)
       (THINGS <PSEUDO (GLASS MIRROR MIRROR-F)>)>
 
@@ -284,16 +274,19 @@ barber isn't here, though. Doors lead northwest and west.">)>>
 		<TELL "You look mah-velous." CR>)
 	       (<VERB? LOOK-BEHIND LOOK-UNDER>
 		<TELL "The mirror seems to be affixed to the wall." CR>)
-	       (<OR <VERB? MUNG>
-		    <AND <VERB? THROW>
-			 <PRSI? ,PSEUDO-OBJECT>>>
+	       (<VERB? MUNG KICK KILL>
 		<SETG MIRROR-BROKEN T>
 		<MOVE ,FOIL ,HERE>
 		<TELL
 "The mirror smashes into a cloud of glass dust, which (fortunately) is
 quickly sucked away by the barbershop's ventilation system. As the glass
 is sucked away you discover what gave the mirror its reflectivity: "
-<GETP ,FOIL ,P?FDESC> CR>)>>
+<GETP ,FOIL ,P?FDESC> CR>)
+	       (<AND <VERB? THROW>
+		     <PRSI? ,PSEUDO-OBJECT>>
+		<MOVE ,PRSO ,HERE>
+		<PERFORM ,V?KICK ,PSEUDO-OBJECT>
+		<RTRUE>)>>
 
 <OBJECT FOIL
 	(DESC "reflective foil")
@@ -304,7 +297,7 @@ is sucked away you discover what gave the mirror its reflectivity: "
 	(FLAGS TAKEBIT NARTICLEBIT)
 	(PLATO-ASK-ABOUT
 "Trans-molecular platinum foil! I am told that it is the most perfectly
-reflective material known to man, and not just on the visual wavelengths!")
+reflective material known, and not just on the visual wavelengths!")
 	(FLOYD-ASK-ABOUT
 "Floyd loves anything reflective! Give Floyd a mirror and he'll be happy
 for days!")
@@ -314,7 +307,7 @@ for days!")
 <ROUTINE FOIL-F ()
 	 <COND (<VERB? MEASURE EXAMINE>
 		<TELL
-"It's a large piece of " 'FOIL ", about six feet on a side." CR>)
+"It's a large piece of " 'FOIL ", about two meters on a side." CR>)
 	       (<VERB? CRUMPLE>
 		<TELL
 "You crumple the foil into a fist-sized wad, but it instantly returns to
@@ -339,7 +332,8 @@ Exits lead north, east, southeast and south.")
       (EAST TO BARBERSHOP)
       (SE TO SALOON)
       (SOUTH TO TRADING-POST)
-      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)>
+      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
+      (GLOBAL VILLAGE)>
 
 <OBJECT PLASTIC-BAG
 	(IN GROCERY)
@@ -349,6 +343,7 @@ Exits lead north, east, southeast and south.")
 	(SYNONYM BAG)
 	(ADJECTIVE SMALL TRANSL PLASTIC)
 	(CAPACITY 10)
+	(SIZE 4)
 	(FLAGS TAKEBIT CONTBIT SEARCHBIT)>
 
 <OBJECT TAFFY
@@ -378,7 +373,7 @@ large sign advertises this month's special.")
       (NE TO BROADWAY)
       (SE TO TRADING-POST)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
-      (GLOBAL SIGN)>
+      (GLOBAL VILLAGE SIGN)>
 
 <OBJECT CAGE
 	(IN PET-STORE)
@@ -449,6 +444,10 @@ of its digestive gas." CR>)>)
 	       (<VERB? TAKE CATCH>
 		<PERFORM ,V?TAKE ,LEASH>
 		<RTRUE>)
+	       (<VERB? SMELL>
+		<TELL
+"There's an odor reminiscent of your school dorm on a night when the dining
+hall served Northern Gallium Bonzo Beans." CR>)
 	       (<VERB? TOUCH HUG>
 		<TELL
 "The " D ,BALLOON " purrs and rings of color shimmer along its body." CR>)>>
@@ -467,9 +466,7 @@ of its digestive gas." CR>)>)
 <ROUTINE LEASH-F ()
 	 <COND (<AND <VERB? TAKE MOVE>
 		     <PRSO? ,LEASH>>
-		<COND (<IN? ,BALLOON ,CAGE>
-		       <TELL ,YOU-CANT "reach the leash inside the cage." CR>)
-		      (,HANGING-IN-AIR
+		<COND (,HANGING-IN-AIR
 		       <TELL ,SENILITY-STRIKES>)
 		      (<FSET? ,SPACESUIT ,WORNBIT>
 		       <TELL
@@ -498,12 +495,13 @@ hyperinflating. Slowly, its buoyancy lifts you right ">
 			      <TELL "off the deck">)>
 		       <TELL
 "! Within moments, the Arcturian is bobbing against the ceiling, and you're
-hanging five feet off the floor! (Footnote 4)" CR>
+hanging two meters off the floor! (Footnote 4)" CR>
 		       <COND (<AND <IN? ,FLOYD ,HERE>
 				   <FSET? ,FLOYD ,ACTIVEBIT>
 				   <NOT ,HANGING-COMMENT>>
 			      <SETG FLOYD-SPOKE T>
-			      <FLOYDS-HANGING-IN-AIR-COMMENT>)>
+			      <SETG HANGING-COMMENT T>
+	 	       	      <TELL ,FLOYDS-HANGING-IN-AIR-COMMENT>)>
 		       <RTRUE>)>)
 	       (<VERB? REMOVE UNTIE>
 		<TELL
@@ -523,13 +521,8 @@ hanging five feet off the floor! (Footnote 4)" CR>
 back at around eye-level.">)>
 		<CRLF>)>>
 
-<ROUTINE FLOYDS-HANGING-IN-AIR-COMMENT ()
-	 <SETG HANGING-COMMENT T>
-	 <TELL
-"   \"Boy, that looks like fun!\" says Floyd, peering up at you.
-\"Can Floyd try it? Huh? Please?\"" CR>>
-
 <OBJECT PANEL
+	(IN LOCAL-GLOBALS)
 	(DESC "ceiling panel")
 	(FDESC ;"so it'll get printed before other DESCs"
 "You can see the faint outline of a panel in the ceiling.")
@@ -551,6 +544,7 @@ back at around eye-level.">)>
 	(ADJECTIVE OSTRICH)
 	(FLAGS TAKEBIT)
 	(VALUE 3)
+	(SIZE 4)
 	(ACTION OSTRICH-NIP-F)>
 
 <ROUTINE OSTRICH-NIP-F ()
@@ -576,7 +570,7 @@ there's an opening in the floor.")
       (NW TO PET-STORE)
       (DOWN TO WAREHOUSE)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
-      (GLOBAL SIGN)>
+      (GLOBAL VILLAGE SIGN)>
 
 <OBJECT INSTRUCTION-SHEET
 	(IN TRADING-POST)
@@ -584,7 +578,7 @@ there's an opening in the floor.")
 	(SYNONYM SHEET)
 	(ADJECTIVE INSTRUCTION)
 	(FLAGS TAKEBIT READBIT VOWELBIT)
-	(SIZE 2)
+	(SIZE 1)
 	(TEXT
 "\"FREZONE (tm) Liquid Gorzium Explosive|
 Instructions for use:|
@@ -593,13 +587,13 @@ Instructions for use:|
 3. Set timer.|
 4. Vamoose.|
 NOTE: Do not expose explosive to temperatures above
-150 degrees Kelvin for period of more than 100 millichrons.\"")>
+150 degrees Kelvin for periods of more than 100 millichrons.\"")>
 
 <OBJECT TWELVE-PRONG-FROMITZ-BOARD
 	(IN TRADING-POST)
 	(DESC "twelve-prong fromitz board")
 	(SYNONYM BOARD BOARDS PRONGS)
-	(ADJECTIVE TWELVE PRONG 12-PRONG FROMITZ NUMBER)
+	(ADJECTIVE TWELVE PRONG PRONGED 12-PRONG FROMITZ NUMBER)
 	(FLAGS TAKEBIT)
 	(PLATO-ASK-ABOUT
 "I'm really not at all mechanically inclined. My sincerest apologies.")
@@ -629,6 +623,7 @@ completion. The way out is to the east.")
       (EAST TO TRADING-POST)
       (OUT TO TRADING-POST)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)
+      (GLOBAL VILLAGE)
       (ACTION STUDIO-F)>
 
 <ROUTINE STUDIO-F (RARG)
@@ -652,7 +647,6 @@ a 91st-century-style scrap sculpture" ,ELLIPSIS>)>>
 "I'm really not at all mechanically inclined. My sincerest apologies.")
 	(FLOYD-ASK-ABOUT
 "It's a kind of a thingamabob for connecting a, you know, a whosiwhatsis.")
-	(SIZE 5)
 	(FLAGS TAKEBIT)
 	(ACTION DIODE-J-F)>
 
@@ -691,7 +685,8 @@ to the east is a partially disguised exit.")
       (EAST TO CASINO)
       (WEST TO TRADING-POST)
       (NW TO GROCERY)
-      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)>
+      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
+      (GLOBAL VILLAGE)>
 
 <ROOM CASINO
       (IN ROOMS)
@@ -700,6 +695,7 @@ to the east is a partially disguised exit.")
       (WEST TO SALOON)
       (UP TO FLOPHOUSE IF ROULETTE-TURNED)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)
+      (GLOBAL VILLAGE)
       (ACTION CASINO-F)>
 
 <GLOBAL ROULETTE-TURNED <>>
@@ -750,14 +746,17 @@ and to the north!" CR>)>)
 	(DESC "pair of dice")
 	(SYNONYM PAIR DICE)
 	(FLAGS TAKEBIT PLURALBIT)
-	(SIZE 2)
+	(SIZE 3)
 	(ACTION DICE-F)>
 
 <GLOBAL DICE-FOOTNOTE <>>
 
 <ROUTINE DICE-F ("AUX" NUM)
 	 <COND (<VERB? ROLL THROW>
-		<COND (<FSET? ,HERE ,WEIGHTLESSBIT>
+		<COND (<NOT <ULTIMATELY-IN? ,DICE>>
+		       <TELL ,YNH TR ,DICE>
+		       <RTRUE>)
+		      (<FSET? ,HERE ,WEIGHTLESSBIT>
 		       <COND (<PROB 50>
 			      <SET NUM 7>)
 			     (T
@@ -785,7 +784,7 @@ and to the north!" CR>)>)
 There's a sign on the wall and a door to the south.")
       (SOUTH TO CASINO)
       (OUT TO CASINO)
-      (GLOBAL SIGN)
+      (GLOBAL VILLAGE SIGN)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)>
 
 <ROOM FLOPHOUSE
@@ -794,7 +793,7 @@ There's a sign on the wall and a door to the south.")
       (DOWN TO CASINO)
       (OUT TO CASINO)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)
-      (GLOBAL BED)
+      (GLOBAL VILLAGE BED)
       (ACTION FLOPHOUSE-F)>
 
 <ROUTINE FLOPHOUSE-F (RARG)
@@ -843,7 +842,7 @@ well-scrubbed metal of the space station.")
       (NORTH PER VILLAGE-BOUNDARY-F)
       (SOUTH TO MAIN-STREET)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
-      (GLOBAL IRIS-HATCH)>
+      (GLOBAL VILLAGE IRIS-HATCH)>
 
 <ROOM MAIN-STREET
       (IN ROOMS)
@@ -861,7 +860,8 @@ the \"street\" narrows and ramps downward.")
       (WEST TO TRAVEL-AGENCY)
       (UP TO MAYORS-OFFICE)
       (DOWN TO ALLEY)
-      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)>
+      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
+      (GLOBAL VILLAGE)>
 
 <ROOM GREASY-STRAW
       (IN ROOMS)
@@ -869,7 +869,7 @@ the \"street\" narrows and ramps downward.")
       (NE TO TRADING-POST)
       (SW TO MAIN-STREET)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
-      (GLOBAL SIGN)
+      (GLOBAL SIGN VILLAGE)
       (ACTION GREASY-STRAW-F)>
 
 <ROUTINE GREASY-STRAW-F (RARG)
@@ -892,7 +892,7 @@ Exits lead northeast and southwest.">)>>
 
 <ROUTINE COUNTER-F ()
 	 <COND (<AND <VERB? LOOK-UNDER LOOK-BEHIND SEARCH EXAMINE HIDE>
-		     <IN? ,NECTAR ,LOCAL-GLOBALS>>
+		     <NOT <FSET? ,NECTAR ,TOUCHBIT>>>
 		<PERFORM ,V?SEARCH ,GLOBAL-ROOM>
 		<RTRUE>)
 	       (<VERB? LOOK-OVER>
@@ -904,19 +904,23 @@ Exits lead northeast and southwest.">)>>
 	(SYNONYM CUP NECTAR FOOD)
 	(ADJECTIVE RAMOSIAN FIRE)
 	(FLAGS TAKEBIT)
-	(FOOD-DESC " fire nectar - thick and warming")
+	(FOOD-DESC " fire nectar -- thick and warming")
 	(GENERIC GENERIC-FOOD-F)
 	(ACTION NECTAR-F)>
 
 <ROUTINE NECTAR-F ()
 	 <COND (<AND <VERB? THROW POUR EMPTY>
 		     <PRSO? ,NECTAR>>
-		<TELL
-"You create a nectarish mess, which thankfully dries up very quickly">
+		<MESS "nectar">
 		<ANTI-LITTER ,NECTAR>)
 	       (<AND <VERB? LOOK-INSIDE>
 		     <NOUN-USED ,W?CUP ,NECTAR>>
-		<TELL "The cup is filled with nectar." CR>)
+		<TELL "Yup. Nectar." CR>)
+	       (<VERB? REACH-IN TOUCH EXAMINE TASTE>
+		<TELL "The nectar is warm and thick." CR>)
+	       (<VERB? EAT-FROM>
+		<PERFORM ,V?EAT ,NECTAR>
+		<RTRUE>)
 	       (<AND <VERB? FIND>
 		     <IN? ,NECTAR ,LOCAL-GLOBALS>
 		     <EQUAL? ,HERE ,GREASY-STRAW>>
@@ -937,7 +941,8 @@ Exits lead northeast and southwest.">)>>
 Mayor, the unofficial leader of the village. Main Street is below.")
       (DOWN TO MAIN-STREET)
       (OUT TO MAIN-STREET)
-      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)>
+      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)
+      (GLOBAL VILLAGE)>
 
 <OBJECT BOOK
 	(IN MAYORS-OFFICE)
@@ -947,6 +952,7 @@ Mayor, the unofficial leader of the village. Main Street is below.")
 	(SYNONYM TEXTBOOK BOOK)
 	(ADJECTIVE TEXT)
 	(FLAGS TAKEBIT READBIT)
+	(SIZE 8)
 	(ACTION BOOK-F)>
 
 <ROUTINE BOOK-F ()
@@ -971,9 +977,33 @@ of the subject." CR>)>)
 	(DESC "piece of paper")
 	(SYNONYM PAPER PIECE)
 	(FLAGS TAKEBIT READBIT)
-	(SIZE 2)
+	(SIZE 1)
 	(TEXT
-"\"(bitter/salty/bitter)  softness/weakness|
+"\"bttr/salty/bttr     softness/weakness|
+sweet/v.sour         Hunji (noun form)|
+blnd/salty/sour      Zeenak (adj form)|
+blnd/bttr            air/atmosphere|
+sour/blnd/blnd/sour  died/failed|
+sweet/v.sweet        legal destruction|
+                         (sabotage?)|
+v.salty              however|
+sour/blnd/sour/sweet turn back|
+blnd                 (def. article?)|
+v.sweet/blnd/sour    I have shined|
+                         light upon|
+slightly-sour        solitary|
+v.sweet/v.salty      element/substance|
+sweet/slightly-bttr  brethren (adj)|
+blnd/sour/v.sour     is souring|
+v.salty/salty/sour   bad/evil/deadly|
+                         radiations|
+spicy-hot/blnd/blnd  78 (?) 7/8 (?)|
+bttr/sour/v.sour     weapon (possesv.)|
+v.sweet              (emphasis mark?)\""
+
+;"old TEXT below didn't work on 40-column computers"
+
+;"\"(bitter/salty/bitter)  softness/weakness|
 (sweet/very-sour)       Hunji (noun form)|
 (bland/salty/sour)      Zeenak (adj form)|
 (bland/bitter)          air/atmosphere|
@@ -1000,7 +1030,8 @@ of the subject." CR>)>)
 doors to the north and northwest.")
       (NORTH TO MAIN-STREET)
       (NW TO TRAVEL-AGENCY)
-      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)>
+      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
+      (GLOBAL VILLAGE)>
 
 <OBJECT PLATINUM-DETECTOR
 	(IN BANK)
@@ -1008,6 +1039,7 @@ doors to the north and northwest.")
 	(SYNONYM DETECTOR)
 	(ADJECTIVE PLATINUM)
 	(FLAGS TAKEBIT LIGHTBIT)
+	(SIZE 15)
 	(ACTION PLATINUM-DETECTOR-F)>
 
 <ROUTINE PLATINUM-DETECTOR-F ()
@@ -1022,7 +1054,9 @@ doors to the north and northwest.")
 		     <G? ,DETECTOR-COUNTER 49>>
 		<COND (<G? ,DETECTOR-COUNTER 99>
 		       <TELL "Ouch! The detector is too hot to pick up!" CR>)
-		      (<NOT <EQUAL? <ITAKE> ,M-FATAL <>>>
+		      (<EQUAL? <ITAKE> ,M-FATAL <>>
+		       <RTRUE>)
+		      (T
 		       <TELL
 "As you pick up the detector, you notice that is feels ">
 		       <COND (<G? ,DETECTOR-COUNTER 75>
@@ -1047,25 +1081,7 @@ doors to the north and northwest.")
 
 <GLOBAL DETECTOR-COUNTER 0>
 
-<ROUTINE I-PLATINUM-DETECTOR ()
-	 <SETG DETECTOR-COUNTER <+ ,DETECTOR-COUNTER 1>>
-	 <COND (<AND <VISIBLE? ,PLATINUM-DETECTOR>
-		     <OR <EQUAL? <META-LOC ,FOIL>
-				 <META-LOC ,PLATINUM-DETECTOR>>
-			 <AND <ULTIMATELY-IN? ,PLATINUM-DETECTOR ,BARBERSHOP>
-			      <NOT ,MIRROR-BROKEN>>>>
-		<TELL "   The detector is quietly beeping." CR>)>
-	 <COND (<AND <EQUAL? ,DETECTOR-COUNTER 50 75>
-		     <IN? ,PLATINUM-DETECTOR ,PROTAGONIST>>
-		<TELL "   You notice that the detector is getting ">
-		<COND (<EQUAL? ,DETECTOR-COUNTER 75>
-		       <TELL "very ">)>
-		<TELL "warm." CR>)
-	       (<AND <EQUAL? ,DETECTOR-COUNTER 100>
-		     <IN? ,PLATINUM-DETECTOR ,PROTAGONIST>>
-		<MOVE ,PLATINUM-DETECTOR ,HERE>
-		<TELL
-"   Yeow! The detector is now too hot to handle, so you drop it." CR>)>>
+;"routine I-PLATINUM-DETECTOR moved to INTERRUPTS file"
 
 <ROOM TRAVEL-AGENCY
       (IN ROOMS)
@@ -1077,6 +1093,7 @@ rundown spacetown would be able to afford an interstellar pleasure jaunt.")
       (EAST TO MAIN-STREET)
       (SE TO BANK)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
+      (GLOBAL VILLAGE)
       (THINGS <PSEUDO (<> POSTER TRAVEL-AGENCY-POSTER-F)>)>
 
 <ROUTINE TRAVEL-AGENCY-POSTER-F ()
@@ -1114,7 +1131,7 @@ and the alley slopes upward to the northwest.")
       (NW TO MAIN-STREET)
       (UP TO MAIN-STREET)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
-      (GLOBAL GARBAGE)>
+      (GLOBAL GARBAGE VILLAGE)>
 
 <ROOM MISSIONARY
       (IN ROOMS)
@@ -1127,7 +1144,8 @@ are enough kooks in the galaxy to keep the belief going. You can exit to the
 south.")
       (SOUTH TO ALLEY)
       (OUT TO ALLEY)
-      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)>
+      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)
+      (GLOBAL VILLAGE)>
 
 <ROOM WAREHOUSE
       (IN ROOMS)
@@ -1136,7 +1154,7 @@ south.")
       (SW TO ALLEY)
       (DOWN TO AIRLOCK IF INNER-AIRLOCK-DOOR IS OPEN)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
-      (GLOBAL SIGN INNER-AIRLOCK-DOOR AIRLOCK-OBJECT)
+      (GLOBAL SIGN VILLAGE INNER-AIRLOCK-DOOR AIRLOCK-OBJECT)
       (ACTION WAREHOUSE-F)>
 
 <ROUTINE WAREHOUSE-F (RARG)
@@ -1150,7 +1168,7 @@ in the ceiling and the southwest wall.">)>>
 
 <OBJECT INNER-AIRLOCK-DOOR
 	(IN LOCAL-GLOBALS)
-	(DESC "inner airlock door")
+	(DESC "inner door")
 	(SYNONYM DOOR HATCH)
 	(ADJECTIVE INNER UPPER AIRLOCK)
 	(FLAGS DOORBIT VOWELBIT)
@@ -1161,11 +1179,11 @@ in the ceiling and the southwest wall.">)>>
 	 <COND (<AND <VERB? OPEN>
 		     <NOT <FSET? ,INNER-AIRLOCK-DOOR ,OPENBIT>>
 		     <FSET? ,OUTER-AIRLOCK-DOOR ,OPENBIT>>
-		<TELL "It won't budge." CR>)>>
+		<TELL ,WONT-BUDGE>)>>
 
 <OBJECT OUTER-AIRLOCK-DOOR
 	(IN LOCAL-GLOBALS)
-	(DESC "outer airlock door")
+	(DESC "outer door")
 	(SYNONYM DOOR HATCH)
 	(ADJECTIVE OUTER LOWER AIRLOCK)
 	(FLAGS DOORBIT VOWELBIT)
@@ -1176,7 +1194,7 @@ in the ceiling and the southwest wall.">)>>
 	 <COND (<AND <VERB? OPEN>
 		     <NOT <FSET? ,OUTER-AIRLOCK-DOOR ,OPENBIT>>>
 		<COND (<FSET? ,INNER-AIRLOCK-DOOR ,OPENBIT>
-		       <TELL "It won't budge." CR>)
+		       <TELL ,WONT-BUDGE>)
 		      (T
 		       <TELL
 "As the door opens, the air in the lock whooshes out into the vacuum of space">
@@ -1188,12 +1206,8 @@ in the ceiling and the southwest wall.">)>>
 			      <LOST-IN-SPACE>)
 			     (T
 			      <FSET ,OUTER-AIRLOCK-DOOR ,OPENBIT>
-			      ;<COND (<AND <ULTIMATELY-IN? ,BOTTLE>
-					  <NOT ,CARBON-DIOXIDE-GONE>>
-				     <DEQUEUE I-MELT-CARBON-DIOXIDE>
-				     <COND (<IN? ,EXPLOSIVE ,BOTTLE>
-				     	    <DEQUEUE I-EXPLOSIVE-MELT>)>
-				     <QUEUE I-FREEZE-CARBON-DIOXIDE -1>)>
+			      <COND (<EQUAL? <META-LOC ,EXPLOSIVE> ,HERE>
+				     <DEQUEUE I-EXPLOSIVE-MELT>)>
 			      <SET X <FIRST? ,AIRLOCK>>
 			      <REPEAT ()
 				      <COND (<NOT .X>
@@ -1265,13 +1279,13 @@ explodes into a puff of hydrogen that immediately vanishes!" CR>)>
       (DOWN TO VACUUM-STORAGE IF OUTER-AIRLOCK-DOOR IS OPEN)
       (OUT TO VACUUM-STORAGE IF OUTER-AIRLOCK-DOOR IS OPEN)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)
-      (GLOBAL INNER-AIRLOCK-DOOR OUTER-AIRLOCK-DOOR AIRLOCK-OBJECT)
+      (GLOBAL VILLAGE INNER-AIRLOCK-DOOR OUTER-AIRLOCK-DOOR AIRLOCK-OBJECT)
       (ACTION AIRLOCK-F)>
 
 <ROUTINE AIRLOCK-F (RARG)
 	 <COND (<EQUAL? .RARG ,M-LOOK>
 		<TELL
-"This is a cramped lock with doors above and below you. ">
+"This is a cramped airlock with doors above and below you. ">
 		<COND (<AND <NOT <FSET? ,INNER-AIRLOCK-DOOR ,OPENBIT>>
 			    <NOT <FSET? ,OUTER-AIRLOCK-DOOR ,OPENBIT>>>
 		       <TELL "Neither door">)
@@ -1310,10 +1324,11 @@ explodes into a puff of hydrogen that immediately vanishes!" CR>)>
 		<COND (<EQUAL? ,HERE ,AIRLOCK>
 		       <TELL "There are two doors." CR>)
 		      (T
-		       <PERFORM-PRSA <COND (<EQUAL? ,HERE ,WAREHOUSE>
-					    ,INNER-AIRLOCK-DOOR)
-					   (<EQUAL? ,HERE ,VACUUM-STORAGE>
-					    ,OUTER-AIRLOCK-DOOR)>>)>)>>
+		       <PERFORM ,PRSA <COND (<EQUAL? ,HERE ,WAREHOUSE>
+					     ,INNER-AIRLOCK-DOOR)
+					    (<EQUAL? ,HERE ,VACUUM-STORAGE>
+					     ,OUTER-AIRLOCK-DOOR)>>
+		       <RTRUE>)>)>>
 
 <ROUTINE LOST-IN-SPACE ()
 	 <JIGS-UP "||
@@ -1327,7 +1342,7 @@ dwindling to a dot of light behind you. Eventually, your air runs out.">>
       (UP TO AIRLOCK IF OUTER-AIRLOCK-DOOR IS OPEN)
       (IN TO AIRLOCK IF OUTER-AIRLOCK-DOOR IS OPEN)
       (FLAGS RLANDBIT WEIGHTLESSBIT NWELDERBIT)
-      (GLOBAL OUTER-AIRLOCK-DOOR AIRLOCK-OBJECT)
+      (GLOBAL VILLAGE OUTER-AIRLOCK-DOOR AIRLOCK-OBJECT)
       (VALUE 3)
       (ACTION VACUUM-STORAGE-F)>
 
@@ -1338,7 +1353,7 @@ dwindling to a dot of light behind you. Eventually, your air runs out.">>
 same way that your dad kept beer cold in the back yard during winters on
 Gallium. In fact, the villagers usually refer to this place as the \"vac
 yard.\" Only the " 'BOOTS ", clinging to the outer skin of the warehouse,
-are preventing you from floating off into space. Tethered all around you:
+is preventing you from floating off into space. Tethered all around you:
 those items in the Trading Post's inventory that, for reasons of temperature
 or anti-corrosion, must be stored here in space. The door to the airlock,
 \"above\" you, is ">
@@ -1354,6 +1369,7 @@ with an even tinier label.")
 	(SYNONYM EXPLOSIVE CYLIND LABEL)
 	(ADJECTIVE EXPLOSIVE FREZONE SMALL)
 	(FLAGS TAKEBIT VOWELBIT READBIT)
+	(SIZE 3)
 	(TEXT
 "\"FREZONE (tm) Liquid Gorzium Explosive. For use only by licensed
 demolitionist. Instruction sheet available from vendor; read
@@ -1386,6 +1402,12 @@ It has a tiny label.">
 		      (T
 		       <QUEUE I-EXPLOSIVE-MELT 100>
 		       <RFALSE>)>)
+	       (<AND <VERB? PUT>
+		     <PRSI? ,HEATING-CHAMBER>>
+	        <TELL "The explosive " ,SUBLIMES-INTO-FREZONE>
+		<DEQUEUE I-EXPLOSIVE-MELT>
+		<REMOVE-CAREFULLY ,EXPLOSIVE>
+		<CRLF>)
 	       (<AND <VERB? DISCONNECT>
 		     <NOT ,PRSI>
 		     ,EXPLOSIVE-CONNECTED>
@@ -1398,31 +1420,7 @@ It has a tiny label.">
 
 <GLOBAL MELT-COUNTER 0>
 
-<ROUTINE I-EXPLOSIVE-MELT ("AUX" OLD-MELT-COUNTER)
-	 <SET OLD-MELT-COUNTER ,MELT-COUNTER>
-	 <SETG MELT-COUNTER <+ ,MELT-COUNTER
-			       <COND (<AND <IN? ,EXPLOSIVE ,THERMOS>
-					   <NOT <FSET? ,THERMOS ,OPENBIT>>>
-				      </ ,C-ELAPSED 4>)
-				     (T
-				      ,C-ELAPSED)>>>
-	 <COND (<G? ,MELT-COUNTER 210>
-		<COND (<VISIBLE? ,EXPLOSIVE>
-		       <TELL "   The explosive " ,SUBLIMES-INTO-FREZONE CR>)
-		      (<AND <IN? ,EXPLOSIVE ,THERMOS>
-			    <NOT <FSET? ,THERMOS ,OPENBIT>>>
-		       <SETG THERMOS-FILLED-WITH-GAS T>)>
-		<REMOVE-CAREFULLY ,EXPLOSIVE>)
-	       (<AND <VISIBLE? ,EXPLOSIVE>
-		     ,LIT>
-		<COND (<AND <G? ,MELT-COUNTER 170>
-			    <NOT <G? .OLD-MELT-COUNTER 170>>>
-		       <TELL "  ">
-		       <DESCRIBE-EXPLOSIVE>)
-		      (<AND <G? ,MELT-COUNTER 130>
-			    <NOT <G? .OLD-MELT-COUNTER 130>>>
-		       <TELL "  ">
-		       <DESCRIBE-EXPLOSIVE>)>)>>
+;"routine I-EXPLOSIVE-MELT moved to INTERRUPTS file"
 
 <ROUTINE DESCRIBE-EXPLOSIVE ()
 	 <TELL " The explosive ">
@@ -1441,7 +1439,8 @@ indicate that a villager down on his or her luck could come here to hock
 some valuable possession.")
       (NE TO ALLEY)
       (OUT TO ALLEY)
-      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)>
+      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)
+      (GLOBAL VILLAGE)>
 
 <OBJECT SPRAY-CAN
 	(IN PAWN-SHOP)
@@ -1453,6 +1452,7 @@ spray can. It's sitting here in the shop, and has some lettering on it.")
 	(ADJECTIVE SPRAY)
 	(FLAGS TAKEBIT READBIT)
 	(GENERIC GENERIC-CAN-F)
+	(SIZE 8)
 	(ACTION SPRAY-CAN-F)>
 
 <ROUTINE SPRAY-CAN-F ()
@@ -1468,17 +1468,18 @@ spray can. It's sitting here in the shop, and has some lettering on it.")
 A mixture of high-quality spores|
 Lowest gas-inducement levels of any brand!\"" CR>)
 	       (<VERB? SPRAY>
-		<COND (,PRSI
+		<COND (<NOT <ULTIMATELY-IN? ,SPRAY-CAN>>
+		       <TELL ,YNH TR ,SPRAY-CAN>
+		       <RTRUE>)
+		      (,PRSI
 		       <TELL
-"The nozzle of the can isn't very directional; rather than spraying the
-can on something in particular, it seems to be more designed to simply
-produce a broad mist." CR>
+"The nozzle of the can isn't very directional; rather than spraying something
+in particular, it seems designed to produce a broad mist." CR>
 		       <RTRUE>)
 		      (<EQUAL? ,SPRAY-COUNTER 0>
 		       <TELL ,NOTHING-HAPPENS>
-		       <RTRUE>)
-		      (T
-		       <SETG SPRAY-COUNTER <- ,SPRAY-COUNTER 1>>)>
+		       <RTRUE>)>
+		<SETG SPRAY-COUNTER <- ,SPRAY-COUNTER 1>>
 		<TELL "A dusty mist puffs from the can and begins dissipating">
 		<COND (<IN? ,BALLOON ,HERE>
 		       <TELL
@@ -1586,7 +1587,8 @@ and most of the walls">)>
 the south side of the alley.")
       (NORTH TO ALLEY)
       (OUT TO ALLEY)
-      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)>
+      (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)
+      (GLOBAL VILLAGE)>
 
 <OBJECT STRONG-BOX
 	(IN LOAN-SHARK)
@@ -1628,6 +1630,7 @@ smaller than an average asteroid." CR>)
 	(SYNONYM COIN GALAKMID)
 	(FLAGS TAKEBIT READBIT)
 	(VALUE 5)
+	(SIZE 2)
 	(TEXT
 "\"ONE GALAKMID|
 Third Galactic Union\"")>
@@ -1643,6 +1646,7 @@ for a disposal chute. The Doc is out, and in this case, out is northwest.")
       (NW TO ALLEY)
       (OUT TO ALLEY)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT NWELDERBIT)
+      (GLOBAL VILLAGE)
       (ACTION DOC-SCHUSTER-F)
       (THINGS <PSEUDO (SMALL HOLE DOC-HOLE-F)>)>
 
@@ -1678,18 +1682,21 @@ unusual, for a disposal hole." CR>)
 
 <GLOBAL SNIFFED <>>
 
+<GLOBAL OSTRICH-FOOTNOTE <>>
+
 <OBJECT OSTRICH
 	(IN DOC-SCHUSTER)
 	(DESC "ostrich")
 	(FDESC "There is a large pile of intoxicated ostrich here.")
-	(SYNONYM OSTRICH PET BIRD)
+	(SYNONYM OSTRICH PET BIRD PILE)
+	(ADJECTIVE LARGE INTOXICATED)
 	(FLAGS VOWELBIT TOUCHBIT)
 	(ACTION OSTRICH-F)>
 
 <ROUTINE OSTRICH-F ()
 	 <COND (<VERB? EXAMINE>
 		<TELL
-"It's a handsome, full-grown ostrich, nearly eight feet tall.
+"It's a handsome, full-grown ostrich, nearly three meters tall.
 As with all ostriches, half its height is its neck">
 		<COND (<NOT <FSET? ,OSTRICH ,TOUCHBIT>>
 		       <TELL
@@ -1699,7 +1706,7 @@ As with all ostriches, half its height is its neck">
 		<REMOVE ,OSTRICH>
 		<TELL
 "The ostrich gives the last of a generous lifetime's supply of squawks
-before being consumed in fiery raygun death." CR>)
+before being consumed in fiery zapgun death." CR>)
 	       (<NOT <FSET? ,OSTRICH ,TOUCHBIT>>
 		<COND (<VERB? SCARE>
 		       <TELL "The ostrich is unconscious!" CR>)
@@ -1738,7 +1745,10 @@ of intoxicated ostrich." CR>)
 		<TELL
 "The ostrich emits a terrified squawk and sticks its head ">
 		<COND (<EQUAL? ,HERE ,DOC-SCHUSTER>
-		       <TELL "into the disposal hole">)
+		       <TELL "into the disposal hole">
+		       <COND (<NOT ,OSTRICH-FOOTNOTE>
+			      <SETG OSTRICH-FOOTNOTE T>
+			      <TELL " (Footnote 14)">)>)
 		      (<AND <EQUAL? ,HERE ,PX>
 			    <IN? ,DISPENSER ,HERE>>
 		       <TELL "into the dispenser hole.">
@@ -1759,7 +1769,7 @@ out, squawking in pain." CR>
 	(DESC "letter")
 	(SYNONYM LETTER)
 	(FLAGS READBIT TAKEBIT)
-	(SIZE 2)
+	(SIZE 1)
 	(TEXT
 "\"Doc -- that ostrich nip you've been waiting for finally came in. Drop
 by and pick it up. If I'm not in, you'll find it in my ceiling panel.\"")>
@@ -1770,7 +1780,7 @@ by and pick it up. If I'm not in, you'll find it in my ceiling panel.\"")>
       (NW TO TRADING-POST)
       (DOWN TO JUNK-YARD)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
-      (GLOBAL KEYPAD WINDOW)
+      (GLOBAL VILLAGE KEYPAD WINDOW)
       (ACTION SHADY-DANS-F)
       (THINGS <PSEUDO (<> SLOT ID-CHANGER-SLOT-F)>)>
 
@@ -1786,10 +1796,12 @@ and downward. " ,DANS-LOT-DESC>)>>
 		<CANT-SEE ,PSEUDO-OBJECT>)
 	       (<AND <VERB? LOOK-INSIDE REACH-IN>
 		     <PRSO? ,PSEUDO-OBJECT>>
-		<PERFORM-PRSA ,ID-CHANGER ,PRSI>)
+		<PERFORM ,PRSA ,ID-CHANGER ,PRSI>
+		<RTRUE>)
 	       (<AND <VERB? PUT>
 		     <PRSI? ,PSEUDO-OBJECT>>
-		<PERFORM-PRSA ,PRSO ,ID-CHANGER>)>>
+		<PERFORM, PRSA ,PRSO ,ID-CHANGER>
+		<RTRUE>)>>
 
 <OBJECT ID-CHANGER
 	(IN SHADY-DANS)
@@ -1815,7 +1827,7 @@ notable features: a keypad and a very small slot. The machine is currently o">
 	       (<VERB? OPEN CLOSE>
 		<TELL ,HUH>)
 	       (<VERB? TAKE>
-		<TELL "It's bolted down." CR>)
+		<TELL ,WONT-BUDGE>)
 	       (<AND <VERB? PUT>
 		     <PRSI? ,ID-CHANGER>>
 		<COND (<PRSO? ,ID-CARD>
@@ -1824,7 +1836,11 @@ notable features: a keypad and a very small slot. The machine is currently o">
 			      <TELL "A voice from the machine says, \"">
 			      <COND (,ID-SCRAMBLED
 				     <TELL
-"Magnetic card data is scrambled; unable to read.\"" CR>)
+"Magnetic card data is scrambled; unable to read.\"">
+				     <COND (<NOT ,SCRAMBLED-FOOTNOTE>
+					    <SETG SCRAMBLED-FOOTNOTE T>
+					    <TELL " (Footnote 15)">)>
+				     <CRLF>)
 				    (T
 				     <TELL
 "Current rank is " N ,ID-RANK ": " <GET ,ID-RANK-LIST <- ,ID-RANK 1>>
@@ -1847,6 +1863,9 @@ notable features: a keypad and a very small slot. The machine is currently o">
 	 <COND (<AND <IN? ,ID-CARD ,ID-CHANGER>
 		     <FSET? ,ID-CHANGER ,ACTIVEBIT>>
 		<COND (,ID-SCRAMBLED
+		       <COND (<NOT ,SCRAMBLED-FOOTNOTE>
+			      <SETG SCRAMBLED-FOOTNOTE T>
+			      <TELL "(Footnote 15) ">)>
 		       <RECORDING "A scrambled card cannot be altered">)
 		      (<G? ,P-NUMBER 10>
 		       <TELL
@@ -1865,16 +1884,16 @@ recognized by the Stellar Patrol is 10.\"" CR>)
 
 <GLOBAL ID-RANK-LIST
 	<TABLE
-	 "Ensign, Sixth Class or lower"
-	 "Ensign, Fifth through Second Class"
+	 "Ensign, lower classes"
 	 "Ensign First Class"
-	 "Midshipman"
+	 "Upshipman"
+	 "Lieutenant Last Class"
 	 "Lieutenant Second Class"
 	 "Lieutenant First Class"
-	 "Lieutenant Commander"
 	 "Commander or Captain"
 	 "Admiral"
-	 "Fleet Admiral">>
+	 "HyperAdmiral"
+	 "Grand Fleet HyperAdmiral">>
 
 <ROOM JUNK-YARD
       (IN ROOMS)
@@ -1885,7 +1904,7 @@ fills the center of the bubble. Passages lead upwards and west.")
       (UP TO SHADY-DANS)
       (WEST TO ALLEY)
       (FLAGS RLANDBIT WEIGHTLESSBIT ONBIT)
-      (GLOBAL GARBAGE)
+      (GLOBAL GARBAGE VILLAGE)
       (ACTION JUNK-YARD-F)>
 
 <ROUTINE JUNK-YARD-F (RARG) 
@@ -1906,6 +1925,7 @@ sculpture in the style of 91st-century scrap art. The sculpture is floating"
 looks to be in the best shape.")
 	(SYNONYM PAIR BOOTS SPACEBOOTS)
 	(ADJECTIVE MAGNETIC)
+	(SIZE 20)
 	(FLAGS PLURALBIT TRYTAKEBIT TAKEBIT WEARBIT)
 	(ACTION BOOTS-F)>
 
@@ -1945,8 +1965,8 @@ attracted by the boots." CR>)
 <OBJECT GARBAGE
 	(IN LOCAL-GLOBALS) ;"in Junk Yard and Alley"
 	(DESC "garbage")
-	(SYNONYM GARBAGE JUNK PILE)
-	(ADJECTIVE LARGE FLOATING USELESS RANDOM)
+	(SYNONYM GARBAGE JUNK TRASH PILE)
+	(ADJECTIVE LARGE FLOATING USELESS RANDOM JUNK GARBAGE TRASH)
 	(FLAGS NARTICLEBIT)
 	(ACTION GARBAGE-F)>
 

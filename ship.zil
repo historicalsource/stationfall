@@ -8,8 +8,8 @@
       (LDESC
 "You are in the heart of the administrative level of the ship, the largest
 level of the S.P.S. Duffy or any other Stellar Patrol ship for that matter.
-The corridor continues starboard and a room lies aft of here. Through the
-door to port lies the bulk of the Duffy. Next to the door is a slot.")
+The corridor continues starboard and a room lies aft. Beyond the door to
+port lies the bulk of the Duffy. Next to the door is a slot.")
       (EAST TO CARGO-BAY-ENTRANCE)
       (SOUTH TO FORM-STORAGE-ROOM)
       (WEST PER FAKE-DOOR-ENTER-F)
@@ -18,7 +18,7 @@ door to port lies the bulk of the Duffy. Next to the door is a slot.")
 		      (<> SLOT FORM-SLOT-F)>)>
 
 <ROUTINE FAKE-DOOR-ENTER-F ()
-	 <THIS-IS-IT ,PSEUDO-OBJECT>
+	 ;<THIS-IS-IT ,PSEUDO-OBJECT> ;"doesn't work"
 	 <TELL "The door is closed." CR>
 	 <RFALSE>>
 
@@ -26,6 +26,8 @@ door to port lies the bulk of the Duffy. Next to the door is a slot.")
 	 <COND (<VERB? OPEN>
 		<RECORDING
 "You must insert a validated Assignment Completion Form in the slot">)
+	       (<VERB? EXAMINE>
+		<TELL "There's a slot next to the closed door." CR>)
 	       (<VERB? ENTER>
 		<DO-WALK ,P?WEST>)>>
 
@@ -37,7 +39,7 @@ door to port lies the bulk of the Duffy. Next to the door is a slot.")
 	(SYNONYM FORM FORMS QX-17-T)
 	(ADJECTIVE ASSIGNMENT COMPLETION FORM)
 	(FLAGS TAKEBIT READBIT VOWELBIT)
-	(SIZE 2)
+	(SIZE 1)
 	(ACTION FORM-F)>
 
 <OBJECT ROBOT-USE-AUTHORIZATION-FORM
@@ -46,6 +48,7 @@ door to port lies the bulk of the Duffy. Next to the door is a slot.")
 	(SYNONYM FORM FORMS JZ-59-G)
 	(ADJECTIVE ROBOT USE AUTHORIZATION FORM)
 	(FLAGS TAKEBIT READBIT)
+	(SIZE 1)
 	(ACTION FORM-F)>
 
 <OBJECT CLASS-THREE-SPACECRAFT-ACTIVATION-FORM
@@ -54,6 +57,7 @@ door to port lies the bulk of the Duffy. Next to the door is a slot.")
 	(SYNONYM FORM FORMS HB-56-V)
 	(ADJECTIVE CLASS THREE SPACECRAFT ACTIVA FORM)
 	(FLAGS TAKEBIT READBIT)
+	(SIZE 1)
 	(ACTION FORM-F)>
 
 <ROUTINE FORM-F ()
@@ -79,7 +83,7 @@ door to port lies the bulk of the Duffy. Next to the door is a slot.")
 	(DESC "chronometer")
 	(SYNONYM CHRONOMETER WRISTWATCH WATCH)
 	(ADJECTIVE WRIST MY)
-	(SIZE 10)
+	(SIZE 8)
 	(FLAGS TAKEBIT WEARBIT WORNBIT)
 	(ACTION CHRONOMETER-F)>
 
@@ -103,11 +107,13 @@ stopped. You can't recall doing anything that might have broken it." CR>)
 	(SYNONYM CARD CARDS)
 	(ADJECTIVE MY PATROL ID IDENTIFICATION)
 	(FLAGS VOWELBIT TAKEBIT TRYTAKEBIT READBIT)
-	(SIZE 3)
+	(SIZE 2)
 	(TEXT
 "\"STELLAR PATROL|
 Paperwork Task Force|
 ID Number: 1451-352-716\"")>
+
+<GLOBAL SCRAMBLED-FOOTNOTE <>>
 
 <GLOBAL ID-SCRAMBLED <>>  
 
@@ -118,6 +124,7 @@ ID Number: 1451-352-716\"")>
 	(ADJECTIVE PATROL MY)
         (FLAGS TAKEBIT WORNBIT WEARBIT CONTBIT SEARCHBIT OPENBIT)
 	(CAPACITY 10)
+	(SIZE 8)
 	(ACTION PATROL-UNIFORM-F)>
 
 <GLOBAL SUIT-PRESSED <>>
@@ -145,9 +152,8 @@ else, it is super-comfy">
 	       (<PROB ,BLATHER-PROB>
 		<DEQUEUE I-BLATHER>
 		<TELL
-"   Ensign Twelfth Class Blather walks by, carrying various toilet scrubbing
-supplies. He spots you, glances away, whimpers, and slouches out of sight
-(Footnote 2)." CR>)
+"   Ensign Twelfth Class Blather walks by, lugging his toilet scrubbing
+supplies. He spots you, whimpers, and slouches away (Footnote 2)." CR>)
 	       (T
 		<SETG BLATHER-PROB <+ ,BLATHER-PROB 10>>)>>
 
@@ -216,7 +222,7 @@ Disbursal Form,\" \"Loss of Form Pallet Label Report Form,\" and
       (IN ROOMS)
       (DESC "Cargo Bay Entrance")
       (LDESC
-"The deck five corridor ends here at the entrance to the cargo bay, to
+"The deck twelve corridor ends here at the entrance to the cargo bay, to
 starboard. A smaller entrance leads fore.")
       (EAST TO CARGO-BAY)
       (WEST TO DECK-TWELVE)
@@ -241,7 +247,7 @@ starboard. A smaller entrance leads fore.")
 		<QUEUE I-FLOYD <+ ,C-ELAPSED 2>>)
 	       (<EQUAL? .RARG ,M-LOOK>
 		<TELL
-"This is where a " ,LFC " would come to check out a robot for use on an
+"This is where a " ,LFC " would come to obtain a robot for use on an
 important assignment. Also for a trivial assignment like yours. "
 ,ROBOT-POOL-EQUIPMENT-DESC " You can exit aft.">)
 	       (<AND <EQUAL? .RARG ,M-EXIT>
@@ -253,7 +259,7 @@ important assignment. Also for a trivial assignment like yours. "
 			 <PRSO? ,PSEUDO-OBJECT>>
 		    <AND <EQUAL? <GET ,P-ADJW 1> <>>
 			 <PRSI? ,PSEUDO-OBJECT>>>
-		<TELL "Next time, specify which bin you meant." CR>)
+		<TELL ,REFER-TO-BIN>)
 	       (<VERB? LOOK-INSIDE>
 		<COND (<AND <ADJ-USED ,A?FIRST ,PSEUDO-OBJECT>
 			    <NOT <EQUAL? ,ROBOT-PICKED ,REX>>>
@@ -296,23 +302,24 @@ important assignment. Also for a trivial assignment like yours. "
 		       <PERFORM ,V?COMFORT ,FLOYD>
 		       <STOP>)
 		      (,FLOYD-ANGUISHED
-		       <SETG WINNER ,PROTAGONIST>
-		       <PERFORM ,V?TOUCH ,FLOYD>
+		       <TELL ,FLOYD-SNIFFS>
 		       <STOP>)
 		      (<AND <VERB? TELL-ABOUT>
 			    <PRSO? ,ME>>
+		       <SET TXT <GETP ,PRSI ,P?FLOYD-ASK-ABOUT>>
 		       <COND (<G? ,ROBOT-EVILNESS 12>
 			      <TELL "\"Oh, quit jabbering already.\"" CR>)
-			     (<SET TXT <GETP ,PRSI ,P?FLOYD-ASK-ABOUT>>
-			      <TELL "\"" .TXT "\"" CR>)
-			     (T
-		       	      <TELL "Floyd shrugs. \"Beats me.">
+			     (<OR <NOT .TXT>
+			      	  <AND <PRSI? ,OLIVER>
+				       <NOT <FSET? ,OLIVER ,TOUCHBIT>>>>
+			      <TELL "Floyd shrugs. \"Beats me.">
 			      <COND (<IN? ,PLATO ,HERE>
 				     <TELL
 " Ask Plato. He knows everything!">)>
-			      <TELL "\"" CR>)>)
-		      (<AND <G? ,PLATO-ATTACK-COUNTER 0>
-			    <IN? ,PLATO ,HERE>>
+			      <TELL "\"" CR>)
+			     (T
+		       	      <TELL "\"" .TXT "\"" CR>)>)
+		      (,STUNNED
 		       <COND (<OR <VERB? HELP>
 				  <AND <VERB? SAVE-SOMETHING>
 				       <PRSO? ,ME>>
@@ -323,7 +330,7 @@ important assignment. Also for a trivial assignment like yours. "
 			      <SETG FLOYD-TOLD T>
 			      <TELL
 "Floyd waves his hands helplessly. \"Yes... I mean no... I mean oh no oh help
-me please. Floyd does not know right thing to do...\"" CR>)
+me please. Floyd in quandry...\"" CR>)
 			     (T
 			      <TELL
 "Floyd just looks at you with confusion and panic in his eyes." CR>
@@ -441,7 +448,7 @@ of direction.\" Then he looks up at you with wide, trusting eyes.
 	       (<AND <NOT <FSET? ,FLOYD ,TOUCHBIT>>
 		     <NOUN-USED ,W?FLOYD ,FLOYD>>
 		<TELL "You don't see anyone by that name here." CR>
-		<STOP>)
+		<RFATAL>)
 	       (<AND <NOT <EQUAL? ,ROBOT-PICKED ,FLOYD>>
 		     <TOUCHING? ,FLOYD>>
 		<CANT-REACH ,FLOYD>)
@@ -452,8 +459,7 @@ of direction.\" Then he looks up at you with wide, trusting eyes.
 	       (<AND ,FLOYD-ANGUISHED
 		     <OR <TOUCHING? ,FLOYD>
 			 <VERB? COMFORT>>>
-		<TELL
-"Floyd sniffs, \"Please leave Floyd alone for a while.\"" CR>)
+		<TELL ,FLOYD-SNIFFS>)
 	       (<AND <PROB <- <* ,ROBOT-EVILNESS 10> 70>>
 		     <TOUCHING? ,FLOYD>
 		     <NOT <VERB? OFF KICK SHAKE>>
@@ -547,7 +553,7 @@ life, you kripping ingrate.\"" CR>)
 		       <COND (,FLOYD-ANGUISHED
 			      <PERFORM ,V?TOUCH ,FLOYD>
 			      <RTRUE>)
-			     (<NOT <EQUAL? ,FLOYD ,ROBOT-PICKED>>
+			     (<UNTOUCHABLE? ,FLOYD>
 			      <CANT-REACH ,FLOYD>
 			      <RTRUE>)>
 		       <SETG C-ELAPSED 30>
@@ -629,17 +635,18 @@ games with it?\" he asks." CR>)
 		       <TELL
 "Floyd smells faintly of ozone and light machine oil." CR>)>)
 	       ;"following clauses are for when Floyd is off"
+	       (<AND <VERB? ON OFF>
+		     ,FLOYD-SHOT>
+		<TELL
+"The switch crumbles in your hand; it looks like Floyd's headed for that
+big Robot Pool in the sky..." CR>)
 	       (<VERB? ON>
-		<COND (,FLOYD-SHOT
-		       <TELL
-"Floyd IS on...but he's headed for that big Robot Pool in the sky..." CR>)
-		      (T
-		       <QUEUE I-FLOYD -1>
-		       <SETG FLOYD-SPOKE T>
-		       <FSET ,FLOYD ,ACTORBIT>
-	 	       <FSET ,FLOYD ,ACTIVEBIT>
-	 	       <FSET ,FLOYD ,TOUCHBIT>
-	 	       <TELL "Floyd jumps to his feet" ,HOPPING-MAD CR>)>)
+		<QUEUE I-FLOYD -1>
+		<SETG FLOYD-SPOKE T>
+		<FSET ,FLOYD ,ACTORBIT>
+	 	<FSET ,FLOYD ,ACTIVEBIT>
+	 	<FSET ,FLOYD ,TOUCHBIT>
+	 	<TELL "Floyd jumps to his feet" ,HOPPING-MAD CR>)
 	       (<VERB? OFF>
 		<TELL "Floyd isn't on." CR>)
 	       (<AND <VERB? TELL>
@@ -715,265 +722,7 @@ grip slips and he clatters to the deck. \"Oops! More dents!\"" CR>)>>
 
 <GLOBAL FLOYD-ANGUISHED <>> ;"true if Plato just died"
 
-<ROUTINE I-FLOYD ("AUX" (OBJ <>))
-	 <QUEUE I-FLOYD -1>
-	 <COND (<NOT <FSET? ,FLOYD ,TOUCHBIT>>
-		<FSET ,FLOYD ,TOUCHBIT>
-		<FSET ,FLOYD ,TRYTAKEBIT>
-		<TELL
-"   The third robot looks up from his marbles, jumps to his feet, and starts
-waving wildly. It's Floyd, your robotic companion from Resida! (Footnote 3)
-You've seen him only occasionally since he opted for assignment in the Stellar
-Patrol those five long years ago." CR>)
-	       (<NOT ,ROBOT-PICKED>
-		<TELL
-"   Floyd jumps up and down saying, \"Oh boy oh boy oh boy pick Floyd
-pick Floyd pick Floyd!\"" CR>)
-	       (,FLOYD-ANGUISHED
-		<COND (<NOT <VISIBLE? ,FLOYD>>
-		       <SETG FLOYD-ANGUISHED <>>)>
-		<SETG FLOYD-FOLLOW <>>
-		<RFALSE>)
-	       (<VISIBLE? ,FLOYD>
-	        <COND (<NOT <FSET? ,FLOYD ,ACTIVEBIT>>
-		       <RFALSE>)>
-		<COND (<AND <IN? ,OSTRICH ,HERE>
-			    <NOT ,OSTRICH-COMMENT>>
-		       <SETG OSTRICH-COMMENT T>
-		       <TELL
-"   Floyd looks at the ostrich with breathless excitement.
-\"Wow! An elephant!\"" CR>)
-		      (<AND <IN? ,BALLOON ,HERE>
-			    <NOT ,BALLOON-COMMENT>
-			    <G? ,ROBOT-EVILNESS 13>>
-		       <SETG BALLOON-COMMENT T>
-		       <TELL
-"   You notice Floyd taunting the " D ,BALLOON ". The frightened balloon
-takes refuge in the far corner of the room." CR>)
-		      (<OR <AND <NOT <FSET? ,HERE ,FLOYDBIT>>
-				<NOT ,FLOYD-SPOKE>
-				<PROB 6>>
-			   <AND <G? ,TIMER-SETTING 0>
-				<VISIBLE? ,EXPLOSIVE>>>
-		       <REMOVE ,FLOYD>
-		       <TELL "   ">
-		       <COND (<IN? ,PLATO ,HERE>
-			      <SETG POSTPONE-ATTACK T>
-			      <REMOVE ,PLATO>
-			      <COND (<G? ,ROBOT-EVILNESS 8>
-				     <TELL
-"\"Let us take a stroll, Floyd,\" says Plato, tucking his book under one
-arm. \"Tagging along after this simpleton human is becoming tiresome.\"
-He breezes out. Floyd hesitates, then follows." CR>)
-				    (<OR <PROB 50>
-					 <EQUAL? ,HERE ,LIBRARY>>
-			      	     <TELL
-"\"Hey, Plato!\" says Floyd. \"Play Hider-and-Seeker with Floyd?\" Plato
-glances up from his book, nods, and says, \"I do believe that I can spare
-a few millichrons for a relaxing bit of sport.\" Floyd bounds away, with
-Plato a bit behind. From out of sight, Floyd's voice faintly echoes
-back to you: \"Ollie ollie oxen free!\"" CR>)
-				    (T
-				     <TELL
-"Plato reaches the last page of his book. \"Heavens! It appears to be time
-for another jaunt to the library. Would you care to accompany me, my
-boisterous friend?\"|
-   \"Oh boy yessiree!\" says Floyd, bounding off after Plato. \"I hope they
-have copies of my favorite comic, THE ADVENTURES OF LANE MASTODON!\"" CR>)>)
-			     (T
-		       	      <TELL
-"Floyd says, \"Floyd going exploring. See you later.\"
-He glides out of the room." CR>)>)
-		      (<AND <PROB 45>
-			    <NOT ,FLOYD-SPOKE>
-			    <IN? ,FLOYD ,HERE>
-			    <IN? ,PROTAGONIST ,HERE>
-			    <NOT ,HANGING-IN-AIR>
-			    ,LIT>
-		       <SET OBJ <FIRST? ,HERE>>
-		       <COND (<AND .OBJ
-				   <FSET? .OBJ ,TOUCHBIT>
-				   <FSET? .OBJ ,TAKEBIT>
-				   <NOT <FSET? .OBJ ,CONTBIT>>
-				   <NOT <EQUAL? .OBJ ,OSTRICH-NIP ,SPACESUIT>>
-				   <NOT <EQUAL? .OBJ ,DETONATOR ,TIMER
-						     ,EXPLOSIVE>>
-				   <L? <CCOUNT ,FLOYD> 4>
-				   <PROB 6>>
-			      <MOVE .OBJ ,FLOYD>
-			      <TELL
-"   Floyd picks up" T .OBJ ", examines it, and tucks ">
-			      <COND (<FSET? .OBJ ,PLURALBIT>
-				     <TELL "them">)
-				    (T
-				     <TELL "it">)>
-			      <TELL " under his arm." CR>)
-			     (<AND <FIRST? ,FLOYD>
-				   <PROB 6>>
-			      <SET OBJ <FIRST? ,FLOYD>>
-			      <COND (<AND <NEXT? .OBJ>
-					  <PROB 60>>
-				     <SET OBJ <NEXT? .OBJ>>)>
-			      <MOVE .OBJ ,HERE>
-			      <TELL
-"   Floyd drops" T .OBJ " he was carrying." CR>)
-			     (<AND <FIRST? ,FLOYD>
-				   <PROB 4>>
-			      <SET OBJ <FIRST? ,FLOYD>>
-			      <COND (<AND <NEXT? .OBJ>
-					  <PROB 60>>
-				     <SET OBJ <NEXT? .OBJ>>)>
-			      <TELL
-"   Floyd moves" T .OBJ " in a wavering course through the air, making
-a roaring noise like a rocket exhaust." CR>)
-			     (<AND <IN? ,PLATO ,HERE>
-				   <PROB 70>>
-			      <TELL "   " <PICK-ONE ,PLATOISMS> ,PERIOD-CR>)
-			     (T
-		       	      <TELL "   Floyd ">
-			      <COND (<PROB <- 36 <* ,ROBOT-EVILNESS 3>>>
-				     <TELL <PICK-ONE ,GOOD-FLOYDISMS>
-					   ,PERIOD-CR>)
-				    (<PROB <- <* ,ROBOT-EVILNESS 25> 300>>
-				     <TELL <PICK-ONE ,BAD-FLOYDISMS>
-					   ,PERIOD-CR>)
-				    (<PROB 6>
-				     <SETG AWAITING-REPLY 4>
-				     <QUEUE I-REPLY <+ ,C-ELAPSED 2>>
-				     <TELL
-"says, \"Hey! Wanna play Hucka-Bucka-Beanstalk?\"" CR>)
-				    (T
-				     <TELL <PICK-ONE ,NEUTRAL-FLOYDISMS>
-					   ,PERIOD-CR>)>)>)>)
-	       (<NOT <FSET? ,FLOYD ,ACTIVEBIT>>
-		<COND (<OR <EQUAL? ,HERE ,VACUUM-STORAGE ,AIRLOCK>
-			   <L? ,SPACETRUCK-COUNTER 5>>
-		       <RFALSE>)
-		      (<NEXT-ROOM? ,FLOYD>
-		       <RFALSE>)>
-		<FSET ,FLOYD ,ACTIVEBIT>
-		<FSET ,FLOYD ,ACTORBIT>
-		<TELL "   Floyd bounds up to you" ,HOPPING-MAD>
-		<COND (,PLATO-INTRODUCED
-		       <TELL
-" Plato strolls in and gives Floyd a pat. \"I reactivated the little fellow;
-I hope you don't mind.\"" CR>)
-		      (T
-		       <TELL
-" Another robot wanders in behind Floyd and notices you." CR>
-		       <I-PLATO T>
-		       <TELL
-"   Plato motions toward Floyd. \"I presume you know this playful little
-fellow. Someone had deactivated him, so I rectified the situation.\"" CR>)>
-		<MOVE ,PLATO ,HERE>
-		<MOVE ,FLOYD ,HERE>)
-	       ;"Floyd is active but not present"
-	       (<G? ,ROBOT-EVILNESS 17>
-		<COND (<AND <LOC ,FLOYD>
-			    <FSET? <LOC ,FLOYD> ,NWELDERBIT>
-			    <NEXT-ROOM? ,FLOYD>>
-		       ;"don't move Floyd to Factory if he's in the next room
-			 and it's a dead end"
-		       <RFALSE>)>
-		<MOVE ,FLOYD ,FACTORY>
-		<ROB ,FLOYD <COND (<EQUAL? ,HERE ,EAST-JUNCTION ,LEVEL-FIVE>
-				   ,SOUTH-CONNECTION)
-				  (<==? ,HERE ,SOUTH-JUNCTION ,NORTH-JUNCTION>
-				   ,EAST-CONNECTION)
-				  (<PROB 25>
-				   ,SOUTH-JUNCTION)
-				  (<PROB 33>
-				   ,EAST-JUNCTION)
-				  (<PROB 50>
-				   ,NORTH-JUNCTION)
-				  (T
-				   ,LEVEL-FIVE)>>
-		<MOVE ,STUN-GUN ,FLOYD>
-		<DEQUEUE I-FLOYD>
-		<DEQUEUE I-ROBOT-EVILNESS>
-		<RFALSE>)
-	       (<AND ,FLOYD-FOLLOW
-		     <EQUAL? ,HERE ,AIRLOCK>>
-		<TELL "   Floyd calls from above, \"">
-		<COND (<AND ,PLATO-INTRODUCED
-			    <EQUAL? ,PLATO-ATTACK-COUNTER 0>>
-		       <TELL "We">)
-		      (T
-		       <TELL "I">)>
-		<TELL
-"'ll wait here; it doesn't look like there's room in that phone booth for ">
-		<COND (<AND ,PLATO-INTRODUCED
-			    <EQUAL? ,PLATO-ATTACK-COUNTER 0>>
-		       <TELL "all">)
-		      (T
-		       <TELL "both">)>
-		<TELL " of us.\"" CR>)
-	       (<OR <AND ,FLOYD-FOLLOW
-			 <G? ,TIMER-SETTING 0>
-			 <VISIBLE? ,EXPLOSIVE>>
-		    <AND ,FLOYD-FOLLOW
-		    	 <PROB 80>>>
-		<TELL "   Floyd ">
-		<COND (<AND ,PLATO-INTRODUCED
-			    <EQUAL? ,PLATO-ATTACK-COUNTER 0>>
-		       <MOVE ,PLATO ,HERE>
-		       <TELL "and Plato follow">)
-		      (T
-		       <TELL "follows">)>
-		<MOVE ,FLOYD ,HERE>
-		<TELL " you." CR>)
-	       (<EQUAL? ,HERE ,SPACETRUCK ,ELEVATOR ,BRIG ,ARMORY>
-		<TELL "   Floyd bounces in">
-		<COND (<AND ,PLATO-INTRODUCED
-			    <EQUAL? ,PLATO-ATTACK-COUNTER 0>>
-		       <MOVE ,PLATO ,HERE>
-		       <TELL ", followed at a more leisurely pace by Plato">)>
-		<TELL ". \"Hey, wait for ">
-		<COND (<AND ,PLATO-INTRODUCED
-			    <EQUAL? ,PLATO-ATTACK-COUNTER 0>>
-		       <MOVE ,PLATO ,HERE>
-		       <TELL "us">)
-		      (T
-		       <TELL "Floyd">)>
-		<MOVE ,FLOYD ,HERE>
-		<TELL "!\" he yells." CR>)
-	       (<AND <PROB 17>
-		     ,LIT
-		     <NOT <EQUAL? ,HERE ,AIRLOCK ,VACUUM-STORAGE>>>
-		<TELL "   Floyd ">
-		<COND (<AND <NOT ,PLATO-INTRODUCED>
-			    <FSET? ,LEVEL-FIVE ,TOUCHBIT>
-			    <PROB 50>>
-		       <TELL
-"dashes into view, followed by a slightly older-looking robot. \"Look, Floyd
-found a new friend,\" Floyd says with unbounded exuberance." CR>
-		       <I-PLATO T>)
-		      (T
-		       <COND (<PROB <- <* ,ROBOT-EVILNESS 10> 70>>
-			      <TELL
-"meanders in. \"You doing anything fun?\" he asks, and then answers
-his own question, \"Nope. Same dumb boring things.\"">)
-			     (<PROB 15>
-		       	      <TELL
-"rushes into the room and barrels into you. \"Oops, sorry,\" he says.
-\"Floyd not looking at where he was going to.\"">)
-			     (T
-		       	      <TELL
-"bounds into the room. \"Floyd here now!\" he cries.">)>
-		       <COND (<AND ,PLATO-INTRODUCED
-				   <EQUAL? ,PLATO-ATTACK-COUNTER 0>>
-			      <MOVE ,PLATO ,HERE>
-		       	      <TELL
-" You notice that Plato has also roamed into view behind Floyd, once again
-absorbed in his reading.">)>
-		       <CRLF>)>
-		<MOVE ,FLOYD ,HERE>
-		<COND (<AND ,HANGING-IN-AIR
-			    <NOT ,HANGING-COMMENT>>
-		       <SETG FLOYD-SPOKE T>
-		       <FLOYDS-HANGING-IN-AIR-COMMENT>)>)>
-	 <SETG FLOYD-SPOKE <>>
-	 <SETG FLOYD-FOLLOW <>>>
+;"routine I-FLOYD moved to INTERRUPTS file"
 
 <GLOBAL GOOD-FLOYDISMS
 	<LTABLE 0
@@ -1036,6 +785,24 @@ awed by such wisdom"
 \"such a reaction will not reduce the level of pain.\" He gives Floyd a
 little tickle, and Floyd begins giggling and forgets the injury">>
 
+<ROUTINE MOVE-FLOYD-TO-FACTORY ()
+	 <MOVE ,FLOYD ,FACTORY>
+	 <ROB ,FLOYD <COND (<EQUAL? ,HERE ,EAST-JUNCTION ,LEVEL-FIVE>
+			    ,SOUTH-CONNECTION)
+			   (<==? ,HERE ,SOUTH-JUNCTION ,NORTH-JUNCTION>
+			    ,EAST-CONNECTION)
+			   (<PROB 25>
+			    ,SOUTH-JUNCTION)
+			   (<PROB 33>
+			    ,EAST-JUNCTION)
+			   (<PROB 50>
+			    ,NORTH-JUNCTION)
+			   (T
+			    ,LEVEL-FIVE)>>
+	 <MOVE ,STUN-GUN ,FLOYD>
+	 <DEQUEUE I-FLOYD>
+	 <DEQUEUE I-ROBOT-EVILNESS>>
+
 <OBJECT HELEN
 	(IN ROBOT-POOL)
 	(DESC "Helen")
@@ -1068,7 +835,8 @@ perforating extension reads \"Helen.\"")
 			    CLASS-THREE-SPACECRAFT-ACTIVATION-FORM>>
 		<CONFETTI ,PRSO>)
 	       (<VERB? OFF ON OPEN>
-		<PERFORM-PRSA ,PLATO>)
+		<PERFORM, PRSA ,PLATO>
+		<RTRUE>)
 	       (<VERB? PICK>
 		<PICK-ROBOT>)>>
 
@@ -1101,7 +869,8 @@ A brass plate on one of his pneumatic arm lifts says \"Rex.\"")
 		     <TOUCHING? ,REX>>
 		<CANT-REACH ,REX>)
 	       (<VERB? OFF ON OPEN>
-		<PERFORM-PRSA ,PLATO>)
+		<PERFORM, PRSA ,PLATO>
+		<RTRUE>)
 	       (<VERB? PICK>
 		<PICK-ROBOT>)>>
 
@@ -1200,7 +969,8 @@ off and unoccupied.")
 		      (T
 		       <TELL ,LOOK-AROUND>)>)
 	       (<VERB? OPEN CLOSE>
-		<PERFORM-PRSA ,SPACETRUCK-HATCH>)
+		<PERFORM, PRSA ,SPACETRUCK-HATCH>
+		<RTRUE>)
 	       (<VERB? EXAMINE>
 		<COND (<EQUAL? ,HERE ,SPACETRUCK>
 		       <V-LOOK>)
@@ -1227,7 +997,7 @@ off and unoccupied.")
       (DESC "Spacetruck")
       (OUT PER SPACETRUCK-EXIT-F)
       (FLAGS RLANDBIT ONBIT NWELDERBIT FLOYDBIT)
-      (GLOBAL WINDOW KEYPAD SPACETRUCK-OBJECT SPACETRUCK-HATCH)
+      (GLOBAL VILLAGE WINDOW KEYPAD SPACETRUCK-OBJECT SPACETRUCK-HATCH)
       (ACTION SPACETRUCK-F)
       (THINGS <PSEUDO (<> SLOT FORM-SLOT-F)
 		      (RED BUTTON RED-BUTTON-F)>)>
@@ -1307,7 +1077,11 @@ controlling the autopilot. The hatch is ">
 		       <TELL "co">)
 		      (T
 		       <MOVE ,FLOYD ,PILOT-SEAT>)>
-		<TELL D ,PILOT-SEAT ".">
+		<PRINTD ,PILOT-SEAT>
+		<COND (<EQUAL? <LOC ,FLOYD> ,PILOT-SEAT ,COPILOT-SEAT>
+		       <TELL
+", his feet dangling a few centimeters short of the floor">)>
+		<TELL ".">
 		<COND (<EQUAL? ,SPACETRUCK-COUNTER -1>
 		       <SETG FLOYD-SPOKE T>
 		       <SETG AWAITING-REPLY 2>
@@ -1349,17 +1123,7 @@ a truck in over two weeks!\"">)>
 		<DEQUEUE I-RADIO>
 		<RFALSE>)>>
 
-<ROUTINE I-RADIO ()
-	 <COND (<NOT <EQUAL? ,HERE ,SPACETRUCK>>
-		<RFALSE>)
-	       (<PROB 30>
-		<TELL
-"   The radio crackles to life. \"Breaker. "
-<PICK-ONE ,RADIO-LINES> " Over.\"" CR>)
-	       (<PROB 20>
-		<TELL
-"   A country and western station drifts into tune for a moment, but then
-fades again." CR>)>>
+;"routine I-RADIO moved to INTERRUPTS file"
 
 <GLOBAL RADIO-LINES
 	<LTABLE
@@ -1450,7 +1214,7 @@ the floor, the bay floods with air, and a voice whispers, \"Stationfall.\"
 Through the viewport, you see no one to meet you. Odd." CR>)
 		      (T
 		       <RECORDING
-"Arrival at terminus of inputted course. Fuel levels now effectively at
+"Arrival at terminus of inputted course. Fuel level now effectively at
 zero. Oxygen supply for one person: approximately two chrons">
 		       <QUEUE I-SUFFOCATE 1970>)>
 		<DEQUEUE I-SPACETRUCK>)>>
@@ -1527,6 +1291,11 @@ dead.">>
 "It's your basic insulated bottle, which hasn't changed much over the
 centuries. This one is plaid, with pictures of little robots all over it. ">
 		<RFALSE> ;"open-closed")
+	       (<AND <VERB? POUR EMPTY>
+		     <PRSO? ,THERMOS>
+		     <IN? ,SOUP ,THERMOS>>
+		<PERFORM ,PRSA ,SOUP ,PRSI>
+		<RTRUE>)
 	       (<AND <VERB? PUT>
 		    <PRSI? ,THERMOS>
 		    <NOT <PRSO? ,EXPLOSIVE ,SMALL-BIT ,LARGE-BIT ,MEDIUM-BIT>>>
@@ -1539,7 +1308,11 @@ centuries. This one is plaid, with pictures of little robots all over it. ">
 		      (,THERMOS-FILLED-WITH-GAS
 		       <FSET ,THERMOS ,OPENBIT>
 		       <TELL
-"You open the thermos, releasing a puff of FREZONE (tm) gas." CR>)>)>>
+"You open the thermos, releasing a puff of FREZONE (tm) gas." CR>)>)
+	       (<AND <VERB? REACH-IN>
+		     <IN? ,SOUP ,THERMOS>>
+		<PERFORM ,V?EXAMINE ,SOUP>
+		<RTRUE>)>>
 
 <GLOBAL THERMOS-FILLED-WITH-GAS <>>
 
@@ -1578,7 +1351,11 @@ centuries. This one is plaid, with pictures of little robots all over it. ">
 		     <NOT <ULTIMATELY-IN? ,THERMOS>>>
 		<THIS-IS-IT ,THERMOS>
 		<TELL ,YNH TR ,THERMOS>)
-	       (<VERB? EXAMINE TOUCH TASTE>
+	       (<VERB? POUR EMPTY>
+		<REMOVE ,SOUP>
+		<MESS "soup">
+		<TELL ,PERIOD-CR>)
+	       (<VERB? EXAMINE TOUCH TASTE REACH-IN>
 		<TELL "The soup seems to be ">
 		<DESCRIBE-SOUP-TEMPERATURE>)>>
 
